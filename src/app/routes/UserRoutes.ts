@@ -16,8 +16,8 @@ export class UserRoutes {
             .post((req, res, next) => usersController.changeNotificationId(req, res, next));
         app.route('/api/users/deleteNotificationId')
             .post((req, res, next) => usersController.deleteNotificationId(req, res, next));
-        app.route('/api/users/arkadaslistele')
-            .get((req, res, next) => usersController.arkadasListele(req, res, next));
+        app.route('/api/users/listMyFriends')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.listMyFriends(req, res, next));
         app.route('/api/users/friendShipRequest')
             .post(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.friendShipRequest(req, res, next));
         app.route('/api/users/acceptFriendShipRequest')

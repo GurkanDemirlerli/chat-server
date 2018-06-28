@@ -8,4 +8,6 @@ export interface IUserService {
     sendFriendShipRequest(item): Promise<any>;
     acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any>;
     rejectFriendShipRequest(friendRequestId: string): Promise<any>;
+    listMyFriends(myId);
+    searchUsers(name, limit, skip): Promise<any[]>;
 }

@@ -45,10 +45,7 @@ class UserSchema {
             createdAt: {
                 type: Date,
                 default: Date.now()
-            }, tasks: [{
-                type: Schema.Types.ObjectId,
-                ref: 'Task'
-            }],
+            }
         });
         schema.index({ name: 'text' });
         return schema;

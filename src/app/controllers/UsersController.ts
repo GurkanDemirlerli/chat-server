@@ -125,24 +125,35 @@ export class UsersController {
         }
     }
 
-    arkadasListele(req, res, next) {
-
-        let ur = new UserRepository();
-
-
-        ur.listMyFriends("5b312264c9d88a1b703e661c").then((friends) => {
-            console.log('Arkadaşlar Bulundu : ', friends);
-            return res.json({
-                'success': true,
-                'data': friends
-            });
-        }).catch((error) => {
-            console.log('Arkadaş Olunamadı Hata.');
+    listMyFriends(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    const myId = isAuth._id;
+                    this._userService.listMyFriends(myId).then((data) => {
+                        return res.json({
+                            'success': true,
+                            'data': data
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            })
+        } catch (error) {
             return res.json({
                 'success': false,
-                'error': error
+                'error': 'Unhandled error'
             });
-        });
+        }
     }
 
     login(req, res, next) {

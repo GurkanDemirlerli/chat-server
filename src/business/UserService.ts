@@ -98,7 +98,8 @@ export class UserService implements IUserService {
     acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this._friendRequestRepository.findById(friendRequestId).then((res) => {
-                if (res.receiver == acceptorId) {
+
+                if (res.receiver.toString() == acceptorId) {
                     this._friendRequestRepository.acceptRequest(friendRequestId).then((res) => {
                         if (res) {
                             this.beFriends({ sender: res.sender, acceptor: res.receiver }).then((res) => {
@@ -157,8 +158,32 @@ export class UserService implements IUserService {
         });
     }
 
-    showFriends() {
+    listMyFriends(myId) {
+        return new Promise<any>((resolve, reject) => {
+            this._userRepository.listMyFriends(myId).then((res) => {
+                if (res) {
+                    resolve(res);
+                } else {
+                    reject('Error : sonuc bulunamadi.');
+                }
+            }).catch((error) => {
+                reject(error);
+            });
+        });
+    }
 
+    searchUsers(name, limit, skip): Promise<any[]> {
+        return new Promise<any>((resolve, reject) => {
+            this._userRepository.searchUsers(name, limit, skip).then((res) => {
+                if (res) {
+                    resolve(res);
+                } else {
+                    reject('Error : sonuc bulunamadi.');
+                }
+            }).catch((error) => {
+                reject(error);
+            });
+        });
     }
 
 

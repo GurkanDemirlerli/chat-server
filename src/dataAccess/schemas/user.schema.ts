@@ -28,7 +28,7 @@ class UserSchema {
             },
             about: {
                 type: String,
-                default: ""
+                default: "Hello i am using Chat-App!"
             },
             notificationId: {
                 type: String,

@@ -24,5 +24,3 @@ veriYukle.kullaniciEkle();
 // import { arkadasOL } from './arkadas-olma';
 // arkadasOL();
 
-// import { arkadasListele } from './arkadas-listeleme';
-// arkadasListele();

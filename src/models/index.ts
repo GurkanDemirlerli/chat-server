@@ -3,6 +3,7 @@ export { ILoginModel } from './DataTransferObjects/abstract/ILoginModel';
 export { ISignupModel } from './DataTransferObjects/abstract/ISignupModel';
 export { ITokenModel } from './DataTransferObjects/abstract/ITokenModel';
 export { ISocketMessage } from './DataTransferObjects/abstract/ISocketMessage';
+export { IFriendRequestCreateModel } from './DataTransferObjects/abstract/IFriendRequestCreateModel';
 
 
 export { SignupModel } from './DataTransferObjects/concrete/SignupModel';

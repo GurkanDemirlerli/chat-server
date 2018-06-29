@@ -1,7 +1,8 @@
+import { IUser } from './IUser';
 import mongoose = require("mongoose");
 
 export interface IFriendShip extends mongoose.Document {
-    sender: string;
-    acceptor: string;
+    sender: string | IUser;
+    acceptor: string | IUser;
     createdAt?: Date;
 }

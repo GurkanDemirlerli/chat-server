@@ -48,24 +48,24 @@ class FriendShipSchema {
         });
 
         //COK ÖNEMLİ: @types/mongoose ile mongoose uyumlu degil doc normalde mongoerror tipinde gözüküyor el ile değiştirildi.
-        schema.post('save', function (doc: IFriendShip) {
-            mongooseConnection.model('User')
-                .findByIdAndUpdate(doc.sender, { $push: { SendedFriendShips: doc._id } }, { 'new': true, 'upsert': true, }, (err, res) => {
-                    if (err) {
-                        console.log('Yollayan Kullaniciya Arkadas eklenemedi', err);
-                    } else {
-                        console.log('Yollayan Kullaniciya Arkadas Eklendi', res);
-                        mongooseConnection.model('User')
-                            .findByIdAndUpdate(doc.acceptor, { $push: { AcceptedFriendShips: doc._id } }, { 'new': true }, (err, res) => {
-                                if (err) {
-                                    console.log('Kabul Eden Kullaniciya Arkadas eklenemedi', err);
-                                } else {
-                                    console.log('Kabul Eden Kullaniciya Arkadas Eklendi', res);
-                                }
-                            });
-                    }
-                });
-        });
+        // schema.post('save', async function (doc: IFriendShip) {
+        //    await mongooseConnection.model('User')
+        //         .findByIdAndUpdate(doc.sender, { $push: { SendedFriendShips: doc._id } }, { 'new': true, 'upsert': true, }, (err, res) => {
+        //             if (err) {
+        //                 console.log('Yollayan Kullaniciya Arkadas eklenemedi', err);
+        //             } else {
+        //                 console.log('Yollayan Kullaniciya Arkadas Eklendi', res);
+        //                 mongooseConnection.model('User')
+        //                     .findByIdAndUpdate(doc.acceptor, { $push: { AcceptedFriendShips: doc._id } }, { 'new': true }, (err, res) => {
+        //                         if (err) {
+        //                             console.log('Kabul Eden Kullaniciya Arkadas eklenemedi', err);
+        //                         } else {
+        //                             console.log('Kabul Eden Kullaniciya Arkadas Eklendi', res);
+        //                         }
+        //                     });
+        //             }
+        //         });
+        // });
         return schema;
     }
 }

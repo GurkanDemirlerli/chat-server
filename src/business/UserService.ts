@@ -6,6 +6,7 @@ import { IUserService } from 'src/business';
 import { IUserRepository, IFriendRequestRepository, IFriendShipRepository } from './../dataAccess/repository';
 import * as jwt from 'jsonwebtoken';
 // import { AuthenticationService } from './';
+import { onlineUsers } from '../socket/online-users';
 
 @injectable()
 export class UserService implements IUserService {
@@ -81,8 +82,8 @@ export class UserService implements IUserService {
 
 
 
-    sendFriendShipRequest(item): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    sendFriendShipRequest(item: IFriendRequest): Promise<IFriendRequest> {
+        return new Promise<IFriendRequest>((resolve, reject) => {
             this._friendRequestRepository.create(item).then((res) => {
                 if (res) {
                     resolve(res);
@@ -95,8 +96,8 @@ export class UserService implements IUserService {
         });
     }
 
-    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<IFriendShip> {
+        return new Promise<IFriendShip>((resolve, reject) => {
             this._friendRequestRepository.findById(friendRequestId).then((res) => {
 
                 if (res.receiver.toString() == acceptorId) {
@@ -104,7 +105,7 @@ export class UserService implements IUserService {
                         if (res) {
                             this.beFriends({ sender: res.sender, acceptor: res.receiver }).then((res) => {
                                 if (res) {
-                                    resolve('SUCCESS');
+                                    resolve(res);
                                 } else {
                                     reject('Error : sonuc bulunamadi.');
                                 }
@@ -130,8 +131,8 @@ export class UserService implements IUserService {
         });
     }
 
-    rejectFriendShipRequest(friendRequestId: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    rejectFriendShipRequest(friendRequestId: string): Promise<IFriendRequest> {
+        return new Promise<IFriendRequest>((resolve, reject) => {
             this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
                 if (res) {
                     resolve(res);
@@ -144,11 +145,19 @@ export class UserService implements IUserService {
         });
     }
 
-    private beFriends(item): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    private beFriends(item): Promise<IFriendShip> {
+        return new Promise<IFriendShip>((resolve, reject) => {
             this._friendShipRepository.create(item).then((res) => {
                 if (res) {
-                    resolve(res);
+                    this._userRepository.findByIdAndPush(<string>res.sender, { SendedFriendShips: res._id }).then((senderRes) => {
+                        this._userRepository.findByIdAndPush(<string>res.acceptor, { AcceptedFriendShips: res._id }).then((acceptorRes) => {
+                            resolve(res);
+                        }).catch((error) => {
+                            reject(error);
+                        });
+                    }).catch((error) => {
+                        reject(error);
+                    });
                 } else {
                     reject('Error : sonuc bulunamadi.');
                 }
@@ -158,11 +167,18 @@ export class UserService implements IUserService {
         });
     }
 
-    listMyFriends(myId) {
+    listMyFriends(myId: string): Promise<any[]> {
         return new Promise<any>((resolve, reject) => {
             this._userRepository.listMyFriends(myId).then((res) => {
                 if (res) {
-                    resolve(res);
+                    let friends = [];
+                    res.AcceptedFriendShips.forEach((friendship) => {
+                        friends.push(friendship.sender);
+                    });
+                    res.SendedFriendShips.forEach((friendship) => {
+                        friends.push(friendship.acceptor);
+                    });
+                    resolve(friends);
                 } else {
                     reject('Error : sonuc bulunamadi.');
                 }
@@ -172,8 +188,8 @@ export class UserService implements IUserService {
         });
     }
 
-    searchUsers(name, limit, skip): Promise<any[]> {
-        return new Promise<any>((resolve, reject) => {
+    searchUsers(name, limit, skip): Promise<IUser[]> {
+        return new Promise<IUser[]>((resolve, reject) => {
             this._userRepository.searchUsers(name, limit, skip).then((res) => {
                 if (res) {
                     resolve(res);

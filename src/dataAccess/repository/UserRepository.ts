@@ -61,31 +61,31 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
         return p;
     }
 
-    listMyFriends(myId): Promise<IUser[]> {
-        let p = new Promise<IUser[]>((resolve, reject) => {
+    listMyFriends(myId: string): Promise<IUser> {
+        let p = new Promise<IUser>((resolve, reject) => {
             UserSchema
-                .find({})
-                .where('_id').equals(myId)
-                .populate({
-                    path: 'SendedFriendShips',
-                    populate: [
-                        {
-                            path: 'acceptor',
-                            select: '_id name email status'
-                        }
-                    ],
-                    // select: 'acceptor'
-                })
+                .findById(myId)
                 .populate({
                     path: 'AcceptedFriendShips',
                     populate: [
                         {
                             path: 'sender',
-                            select: '_id name email status'
+                            select: '_id name email about'
                         }
                     ],
                     // select: 'sender'
                 })
+                .populate({
+                    path: 'SendedFriendShips',
+                    populate: [
+                        {
+                            path: 'acceptor',
+                            select: '_id name email about'
+                        }
+                    ],
+                    // select: 'acceptor'
+                })
+
                 .exec((err, res) => {
                     if (err) {
                         reject(err);

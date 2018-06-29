@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { IOCTYPES } from "../ioc";
 import { IUserService } from "../business";
-import { ISignupModel } from '../models';
+import { ISignupModel, IFriendRequestCreateModel, IFriendRequest } from '../models';
 
 @injectable()
 export class VeriYukle {
@@ -48,27 +48,27 @@ export class VeriYukle {
             const neymar = users[2];
             const drogba = users[3];
 
-            const ronaldodan_messiye_arkadaslik_istegi = {
+            let ronaldodan_messiye_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
                 sender: ronaldo._id,
                 receiver: messi._id,
             };
 
-            const ronaldodan_neymara_arkadaslik_istegi = {
+            let ronaldodan_neymara_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
                 sender: ronaldo._id,
                 receiver: neymar._id,
             };
 
-            const drogbadan_messiye_arkadaslik_istegi = {
+            let drogbadan_messiye_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
                 sender: drogba._id,
                 receiver: messi._id
             }
 
-            const neymardan_drogbaya_arkadaslik_istegi = {
+            let neymardan_drogbaya_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
                 sender: neymar._id,
                 receiver: drogba._id
             }
 
-            const drogbadan_ronaldoya_arkadaslik_istegi = {
+            let drogbadan_ronaldoya_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
                 sender: drogba._id,
                 receiver: ronaldo._id
             }
@@ -81,19 +81,26 @@ export class VeriYukle {
                 this._userService.sendFriendShipRequest(drogbadan_ronaldoya_arkadaslik_istegi),
             ]).then((istekler) => {
                 console.log(istekler);
-                const ronaldodan_messiye_arkadaslik_istegi = istekler[0];
-                const ronaldodan_neymara_arkadaslik_istegi = istekler[1];
-                const drogbadan_messiye_arkadaslik_istegi = istekler[2];
-                const neymardan_drogbaya_arkadaslik_istegi = istekler[3];
-                const drogbadan_ronaldoya_arkadaslik_istegi = istekler[4];
+                const ronaldodan_messiye_arkadaslik_istegi_id = istekler[0]._id;
+                const ronaldodan_neymara_arkadaslik_istegi_id = istekler[1]._id;
+                const drogbadan_messiye_arkadaslik_istegi_id = istekler[2]._id;
+                const neymardan_drogbaya_arkadaslik_istegi_id = istekler[3]._id;
+                const drogbadan_ronaldoya_arkadaslik_istegi_id = istekler[4]._id;
                 Promise.all([
-                    this._userService.acceptFriendShipRequest(ronaldodan_messiye_arkadaslik_istegi, messi._id),
-                    this._userService.acceptFriendShipRequest(ronaldodan_neymara_arkadaslik_istegi, neymar._id),
-                    this._userService.acceptFriendShipRequest(drogbadan_messiye_arkadaslik_istegi, messi._id),
-                    this._userService.acceptFriendShipRequest(neymardan_drogbaya_arkadaslik_istegi, drogba._id),
-                    this._userService.acceptFriendShipRequest(drogbadan_ronaldoya_arkadaslik_istegi, ronaldo._id),
+                    this._userService.acceptFriendShipRequest(ronaldodan_messiye_arkadaslik_istegi_id, messi._id),
+                    this._userService.acceptFriendShipRequest(ronaldodan_neymara_arkadaslik_istegi_id, neymar._id),
+                    this._userService.acceptFriendShipRequest(drogbadan_messiye_arkadaslik_istegi_id, messi._id),
+                    this._userService.acceptFriendShipRequest(neymardan_drogbaya_arkadaslik_istegi_id, drogba._id),
+                    this._userService.acceptFriendShipRequest(drogbadan_ronaldoya_arkadaslik_istegi_id, ronaldo._id),
                 ]).then((arkadaslik) => {
                     console.log(arkadaslik);
+
+                    //Ronaldonun Arkadaslarini goster.
+                    this._userService.listMyFriends(ronaldo._id).then((arkadaslar) => {
+                        console.log('Ronaldonun Arkadaşları', arkadaslar);
+                    }).catch((error) => {
+                        console.log(error);
+                    });
                 }).catch((error) => {
                     console.log(error);
                 })

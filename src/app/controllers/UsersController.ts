@@ -159,8 +159,8 @@ export class UsersController {
     login(req, res, next) {
         let loginModel: LoginModel = new LoginModel(<ILoginModel>req.body)
         this._userService.login(loginModel).then((data) => {
-            var io = req.app.get('socketio');
-            io.emit('hi', onlineUsers);
+            // var io = req.app.get('socketio');
+            // io.emit('hi', onlineUsers);
             return res.json({
                 'success': true,
                 'data': data

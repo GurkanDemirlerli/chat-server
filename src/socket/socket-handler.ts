@@ -1,32 +1,63 @@
+import { injectable } from 'inversify';
 import { onlineUsers } from './online-users';
 import { io } from '../server';
 import { ISocketMessage } from '../models';
+import { AuthenticationService, IUserService } from '../business';
+import { inject } from 'inversify';
+import { IOCTYPES } from '../ioc';
 
+@injectable()
 export class SocketHandler {
-    constructor() {
+    constructor(
+        @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService
+    ) {
         this.initialize();
     }
-    
+
     initialize() {
+
         io.on('connection', (socket) => {
-            socket.on('storeClientInfo', function (userName) {
-                console.log('XXXXXXXXXXX');
-                console.log(socket.id);
-                console.log('YYYYYYYYYYYY');
-                socket[userName] = userName;
-                if (onlineUsers[userName]) {
-                    onlineUsers[userName].socketIds.push(socket.id);
-                } else {
-                    onlineUsers[userName] = new Object();
-                    onlineUsers[userName].socketIds = [];
-                    onlineUsers[userName].socketIds.push(socket.id);
-                    onlineUsers[userName].userName = userName;
+            socket.on('storeClientInfo', (token) => {
+                try {
+                    AuthenticationService.checkAuthenticationForSocket(token).then((isAuth) => {
+                        if (isAuth) {
+                            socket[isAuth._id] = isAuth._id;
+                            if (onlineUsers[isAuth._id]) {
+                                onlineUsers[isAuth._id].socketIds.push(socket.id);
+                            } else {
+                                onlineUsers[isAuth._id] = new Object();
+                                onlineUsers[isAuth._id].socketIds = [];
+                                onlineUsers[isAuth._id].socketIds.push(socket.id);
+                                onlineUsers[isAuth._id].email = isAuth.email;
+
+                                this._userService.listMyFriends(isAuth._id).then((friends) => {
+                                    friends.forEach(friend => {
+                                        try {
+                                            onlineUsers[friend._id].socketIds.forEach(socketId => {
+                                                io.to(socketId).emit('onlineFriends', { message: 'Giris yapti :', friend: isAuth });
+                                            });
+                                        } catch (error) {
+                                        }
+                                    });
+                                }).catch((error) => {
+                                    console.log(error);
+                                });
+                            }
+                            console.log(onlineUsers);
+
+
+
+                        } else {
+                            console.log('Socket kimligi dogrulanamadi');
+                        }
+                    });
+                } catch (error) {
+                    console.log('Socket kimligi dogrulanirken hata:', error);
                 }
-                console.log(onlineUsers);
             });
 
-            socket.on('sendMessage', function (message:ISocketMessage) {
-                
+            socket.on('sendMessage', function (message: ISocketMessage) {
+
             });
 
             socket.on('sendSignalToSubscribers', function (data) {
@@ -47,7 +78,7 @@ export class SocketHandler {
                 });
             });
 
-            socket.on('disconnect', function () {
+            socket.on('disconnect', () => {
                 console.log('User Disconnected');
                 Object.keys(onlineUsers).forEach(user => {
                     onlineUsers[user].socketIds.forEach(socketId => {
@@ -56,7 +87,21 @@ export class SocketHandler {
                                 var index = onlineUsers[user].socketIds.indexOf(socket.id);
                                 onlineUsers[user].socketIds.splice(index, 1);
                             } else {
+
                                 delete onlineUsers[user];
+
+                                this._userService.listMyFriends(user).then((friends) => {
+                                    friends.forEach(friend => {
+                                        try {
+                                            onlineUsers[friend._id].socketIds.forEach(friendSocketId => {
+                                                io.to(friendSocketId).emit('onlineFriends', { message: 'Cikis yapti :', friend: user });
+                                            });
+                                        } catch (error) {
+                                        }
+                                    });
+                                }).catch((error) => {
+                                    console.log(error);
+                                });
                             }
                         }
                     });

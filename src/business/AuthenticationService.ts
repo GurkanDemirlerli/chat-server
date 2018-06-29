@@ -1,5 +1,5 @@
 import { verify } from 'jsonwebtoken';
-import { ILoginModel,ITokenModel } from './../models';
+import { ILoginModel, ITokenModel } from './../models';
 
 export class AuthenticationService {
     public static checkAuthentication(req): Promise<ITokenModel | null> {
@@ -14,6 +14,26 @@ export class AuthenticationService {
                         resolve(null);
                     } else {
                         req.decoded = decoded;
+                        resolve(decoded);
+                    }
+                });
+            }).then(result => {
+                return result
+            }).catch(err => {
+                return err
+            });
+        }
+    }
+
+    public static checkAuthenticationForSocket(token): Promise<ITokenModel | null> {
+        if (token === undefined) {
+            return Promise.resolve(null)
+        } else {
+            return new Promise((resolve, reject) => {
+                verify(token, 'MySecret', (err: Error, decoded: any): boolean | any => {
+                    if (err) {
+                        resolve(null);
+                    } else {
                         resolve(decoded);
                     }
                 });

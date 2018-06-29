@@ -1,5 +1,6 @@
 import { Container } from 'inversify';
 import { IOCTYPES } from './ioc-types.enum';
+import { SocketHandler } from '../socket/socket-handler';
 
 //#region IMPORTS
 //#region CONTROLLER IMPORTS
@@ -44,6 +45,10 @@ export module IOC {
     export const container = new Container()
 
     export function configureContainer(): Container {
+        
+        container
+            .bind<SocketHandler>(SocketHandler)
+            .toSelf()
 
         //#region CONTROLLERS
 
@@ -90,6 +95,9 @@ export module IOC {
         container
             .bind<INotificationService>(IOCTYPES.NOTIFICATION_SERVICE)
             .to(NotificationService)
+
+
+
         //#endregion
 
         return container

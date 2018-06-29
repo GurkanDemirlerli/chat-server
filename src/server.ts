@@ -21,7 +21,7 @@ let app: express.Application = express();
 let server: httpServer = createServer(app);
 //ASAGIDAKI SATIR CIRCULAR DEPENDENCY OLUSTURUYOR .......DIKKAT........
 export let io: socketIoServer = socketIo(server);
-let chatSocket = new SocketHandler();
+
 
 
 const port = process.env.PORT || GLOBAL.PORT;
@@ -51,6 +51,7 @@ if (environment === 'development') {
 ========================================================================== */
 
 const container = IOC.configureContainer();
+let chatSocket = container.get(SocketHandler);
 RouteBinder.configureRoutes(app, container);
 
 

@@ -202,7 +202,25 @@ export class UserService implements IUserService {
         });
     }
 
-
+    findMyFriend(myId, friendId): Promise<IUser> {
+        return new Promise<IUser>((resolve, reject) => {
+            this._friendShipRepository.arkadaslikKontrol(myId, friendId).then((arkadaslarMı) => {
+                if (arkadaslarMı) {
+                    this._userRepository.findById(friendId).then((friend) => {
+                        if (friend) {
+                            resolve(friend);
+                        } else {
+                            reject('Error : Boyle bir kullanici yok.');
+                        }
+                    }).catch((error) => {
+                        reject(error);
+                    });
+                } else {
+                    reject('Error : Arkadas Degiller');
+                }
+            })
+        });
+    }
 
 }
 

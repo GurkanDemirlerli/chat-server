@@ -1,4 +1,3 @@
-import { onlineUsers } from './../../socket/online-users';
 import { IUserService } from './../../business';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from './../../ioc/ioc-types.enum';
@@ -7,6 +6,7 @@ import 'reflect-metadata';
 import { validate } from 'class-validator';
 import { UserRepository } from '../../dataAccess/repository';
 import { AuthenticationService } from '../../business';
+import { onlineUsers } from '../../socket/online-users';
 
 @injectable()
 export class UsersController {
@@ -131,9 +131,24 @@ export class UsersController {
                 if (isAuth) {
                     const myId = isAuth._id;
                     this._userService.listMyFriends(myId).then((data) => {
+                        let friends = [];
+                        data.forEach(friend => {
+                            if (onlineUsers[friend._id]) {
+                                friend.status = 'online';
+                            } else {
+                                friend.status = 'offline';
+                            }
+                            friends.push({
+                                _id: friend._id,
+                                email: friend.email,
+                                name: friend.name,
+                                about: friend.about,
+                                status: friend.status
+                            });
+                        });
                         return res.json({
                             'success': true,
-                            'data': data
+                            'data': friends
                         });
                     }).catch((error) => {
                         return res.json({
@@ -199,6 +214,51 @@ export class UsersController {
                 'error': error
             });
         });
+    }
+
+    findMyFriend(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    const myId = isAuth._id;
+                    const friendId = req.params.friendId;
+                    this._userService.findMyFriend(myId, friendId).then((data) => {
+                        let status;
+                        if (onlineUsers[data._id]) {
+                            status = 'online';
+                        } else {
+                            status = 'offline';
+                        }
+                        const friend = {
+                            _id: data._id,
+                            email: data.email,
+                            name: data.name,
+                            about: data.about,
+                            status: status
+                        }
+                        return res.json({
+                            'success': true,
+                            'data': friend
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            })
+        } catch (error) {
+            return res.json({
+                'success': false,
+                'error': 'Unhandled error'
+            });
+        }
     }
 
 }

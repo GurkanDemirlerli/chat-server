@@ -34,7 +34,7 @@ export class SocketHandler {
                                     friends.forEach(friend => {
                                         try {
                                             onlineUsers[friend._id].socketIds.forEach(socketId => {
-                                                io.to(socketId).emit('onlineFriends', { message: 'Giris yapti :', friend: isAuth });
+                                                io.to(socketId).emit('beingOnline',  isAuth._id );
                                             });
                                         } catch (error) {
                                         }
@@ -94,7 +94,7 @@ export class SocketHandler {
                                     friends.forEach(friend => {
                                         try {
                                             onlineUsers[friend._id].socketIds.forEach(friendSocketId => {
-                                                io.to(friendSocketId).emit('onlineFriends', { message: 'Cikis yapti :', friend: user });
+                                                io.to(friendSocketId).emit('beingOffline',  user );
                                             });
                                         } catch (error) {
                                         }

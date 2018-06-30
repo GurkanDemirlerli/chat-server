@@ -9,5 +9,6 @@ export interface IUserService {
     acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<IFriendShip>;
     rejectFriendShipRequest(friendRequestId: string): Promise<IFriendRequest>;
     listMyFriends(myId: string):Promise<any[]>;
-    searchUsers(name, limit, skip):Promise<IUser[]>
+    searchUsers(name, limit, skip):Promise<IUser[]>;
+    findMyFriend(myId, friendId): Promise<IUser>;
 }

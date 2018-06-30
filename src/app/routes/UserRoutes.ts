@@ -22,5 +22,7 @@ export class UserRoutes {
             .post(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.friendShipRequest(req, res, next));
         app.route('/api/users/acceptFriendShipRequest')
             .post(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.acceptFriendShipRequest(req, res, next));
+        app.route('/api/users/findMyFriend/:friendId')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.findMyFriend(req, res, next));
     }
 }

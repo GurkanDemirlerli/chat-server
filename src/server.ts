@@ -50,7 +50,7 @@ if (environment === 'development') {
 	-- Routes
 ========================================================================== */
 
-const container = IOC.configureContainer();
+export const container = IOC.configureContainer();
 let chatSocket = container.get(SocketHandler);
 RouteBinder.configureRoutes(app, container);
 

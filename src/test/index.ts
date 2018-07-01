@@ -1,9 +1,9 @@
+import { container } from './../server';
 import { IOC } from "../ioc";
 import { VeriYukle } from './veri-yukle';
 
 
-
-const container = IOC.configureContainer();
+// const container = IOC.configureContainer();
 container
     .bind<VeriYukle>(VeriYukle)
     .toSelf()

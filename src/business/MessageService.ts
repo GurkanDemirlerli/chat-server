@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../ioc/ioc-types.enum';
-import { IMessageRepository, IUserRepository } from './../dataAccess/repository';
+import { IMessageRepository, IUserRepository, IFriendShipRepository } from './../dataAccess/repository';
 import { IMessageService } from './interfaces';
 import { IMessage } from '../models';
 
@@ -10,7 +10,8 @@ export class MessageService implements IMessageService {
 
     constructor(
         @inject(IOCTYPES.MESSAGE_REPOSITORY) private _messageRepository: IMessageRepository,
-        @inject(IOCTYPES.USER_REPOSITORY) private _userRepository: IUserRepository
+        @inject(IOCTYPES.USER_REPOSITORY) private _userRepository: IUserRepository,
+        @inject(IOCTYPES.FRIENDSHIP_REPOSITORY) private _friendShipRepository: IFriendShipRepository,
     ) { }
 
     add(message) {
@@ -39,6 +40,24 @@ export class MessageService implements IMessageService {
             });
         });
         return p;
+    }
+
+    findMessagesBetweenMyFriend(myId: string, friendId: string): Promise<IMessage[]> {
+        return new Promise<IMessage[]>((resolve, reject) => {
+            this._friendShipRepository.arkadaslikKontrol(myId, friendId).then((arkadaslarMı) => {
+                if (arkadaslarMı) {
+                    this._messageRepository.findMessagesBetweenTwoUsers(myId, friendId).then((messages: IMessage[]) => {
+                        resolve(messages);
+                    }).catch((error) => {
+                        reject(error);
+                    });
+                } else {
+                    reject('Error : Arkadas Degiller');
+                }
+            }).catch((error) => {
+                reject(error);
+            })
+        });
     }
 }
 

@@ -1,17 +1,19 @@
-import { IUserService } from './../../business';
+import { IUserService, IMessageService } from './../../business';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from './../../ioc/ioc-types.enum';
 import { ISignupModel, SignupModel, ILoginModel, LoginModel } from './../../models';
 import 'reflect-metadata';
 import { validate } from 'class-validator';
-import { UserRepository } from '../../dataAccess/repository';
 import { AuthenticationService } from '../../business';
 import { onlineUsers } from '../../socket/online-users';
 
 @injectable()
 export class UsersController {
 
-    constructor(@inject(IOCTYPES.USER_SERVICE) private _userService: IUserService) { }
+    constructor(
+        @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService,
+        @inject(IOCTYPES.MESSAGE_SERVICE) private _messageService: IMessageService
+    ) { }
 
     signup(req, res, next) {
         let signupModel: SignupModel = new SignupModel(<ISignupModel>req.body)
@@ -239,6 +241,39 @@ export class UsersController {
                         return res.json({
                             'success': true,
                             'data': friend
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            })
+        } catch (error) {
+            return res.json({
+                'success': false,
+                'error': 'Unhandled error'
+            });
+        }
+    }
+
+
+    getMessagesBetweenMyFriend(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    const myId = isAuth._id;
+                    const friendId = req.params.friendId;
+                    this._messageService.findMessagesBetweenMyFriend(myId, friendId).then((data) => {
+                        return res.json({
+                            'success': true,
+                            'data': data
                         });
                     }).catch((error) => {
                         return res.json({

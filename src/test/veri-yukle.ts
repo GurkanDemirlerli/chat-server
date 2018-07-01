@@ -1,13 +1,14 @@
 import { inject, injectable } from "inversify";
 import { IOCTYPES } from "../ioc";
-import { IUserService } from "../business";
-import { ISignupModel, IFriendRequestCreateModel, IFriendRequest } from '../models';
+import { IUserService, IMessageService } from "../business";
+import { ISignupModel, IFriendRequestCreateModel, IFriendRequest, IMessage } from '../models';
 
 @injectable()
 export class VeriYukle {
 
     constructor(
-        @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService
+        @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService,
+        @inject(IOCTYPES.MESSAGE_SERVICE) private _messsageService: IMessageService
     ) { }
 
     public kullaniciEkle() {
@@ -98,6 +99,49 @@ export class VeriYukle {
                     //Ronaldonun Arkadaslarini goster.
                     this._userService.listMyFriends(ronaldo._id).then((arkadaslar) => {
                         console.log('Ronaldonun Arkadaşları', arkadaslar);
+
+                        let ronaldodan_messiye_mesaj_1: IMessage = <IMessage>{
+                            content: "In ac consectetur. Incondimentum",
+                            from: ronaldo._id,
+                            to: messi._id
+                        };
+
+                        let messiden_ronaldoya_mesaj_1: IMessage = <IMessage>{
+                            content: "quis nostrud exercitation ullamco consectetur",
+                            from: messi._id,
+                            to: ronaldo._id
+                        };
+
+                        let ronaldodan_messiye_mesaj_2: IMessage = <IMessage>{
+                            content: "mollit anim id est laborum.",
+                            from: ronaldo._id,
+                            to: messi._id
+                        };
+
+                        let ronaldodan_messiye_mesaj_3: IMessage = <IMessage>{
+                            content: "usmod tempor incididunt ut labore et",
+                            from: ronaldo._id,
+                            to: messi._id
+                        };
+
+                        let messiden_ronaldoya_mesaj_2: IMessage = <IMessage>{
+                            content: "Duis aute irure int occaecat cupidatat non",
+                            from: messi._id,
+                            to: ronaldo._id
+                        };
+
+                        Promise.all([
+                            this._messsageService.add(ronaldodan_messiye_mesaj_1),
+                            this._messsageService.add(messiden_ronaldoya_mesaj_1),
+                            this._messsageService.add(ronaldodan_messiye_mesaj_2),
+                            this._messsageService.add(ronaldodan_messiye_mesaj_3),
+                            this._messsageService.add(messiden_ronaldoya_mesaj_2),
+                        ]).then((mesajlar) => {
+                            console.log("Ronaldo ve Messi Arasındaki Mesajlar", mesajlar);
+                        }).catch((error) => {
+                            console.log(error);
+                        })
+
                     }).catch((error) => {
                         console.log(error);
                     });

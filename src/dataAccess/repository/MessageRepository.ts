@@ -33,7 +33,7 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
                 .where('to').equals(friendId)
                 .populate('from', '_id name')
                 .populate('to', '_id name')
-                .sort('-createdAt')
+                .sort('createdAt')
                 // .select('_id content from to')
                 .exec((err, res) => {
                     if (err) {
@@ -75,7 +75,7 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
                 .where('to').in([requestorId, responderId])
                 .populate('from', '_id name')
                 .populate('to', '_id name')
-                .sort('-createdAt')
+                .sort('createdAt')
                 // .select('_id content from to')
                 .exec((err, res) => {
                     if (err) {

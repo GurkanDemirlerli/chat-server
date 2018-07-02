@@ -59,7 +59,22 @@ export class MessageService implements IMessageService {
             })
         });
     }
-}
 
-//========== TO DO =========
-//  *  TASK EKLENIRKEN ATOMIK OLARAK EKLE.
+    sendMessage(message) {
+        return new Promise<IMessage>((resolve, reject) => {
+            this._messageRepository.create(message).then((res) => {
+                if (res) {
+                    this._messageRepository.findMessage(res._id).then((res) => {
+                        resolve(res);
+                    }).catch((error) => {
+                        reject(error);
+                    });
+                } else {
+                    reject('Error: Mesaj eklenmedi.');
+                }
+            }).catch((error) => {
+                reject(error);
+            })
+        });
+    }
+}

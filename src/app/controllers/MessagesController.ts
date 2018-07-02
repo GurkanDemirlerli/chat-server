@@ -1,7 +1,6 @@
-import { IMessageService, INotificationService } from './../../business';
+import { IMessageService, INotificationService, AuthenticationService } from './../../business';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from './../../ioc/ioc-types.enum';
-// import { AuthenticationService } from '../business/';
 import 'reflect-metadata';
 import { IMessageRepository } from '../../dataAccess/repository';
 import { onlineUsers } from '../../socket/online-users';
@@ -10,43 +9,50 @@ import { onlineUsers } from '../../socket/online-users';
 export class MessagesController {
 
     constructor(
-        @inject(IOCTYPES.MESSAGE_REPOSITORY) private _messageRepository: IMessageRepository,
+        @inject(IOCTYPES.MESSAGE_SERVICE) private _messageService: IMessageService,
     ) { }
 
     add(req, res, next) {
-        this._messageRepository.create(req.body).then((message) => {
-            var io = req.app.get('socketio');
-            try {
-                onlineUsers[message.to].socketIds.forEach(socketId => {
-                    io.to(socketId).emit('receiveMessage', message);
-                });
-            } catch (error) {
-                console.log('mesaj gitmedi, kullanıcı yok yada online degil');
-                console.log(error);
-            }
-            return res.json({
-                'success': true,
-                'data': message
-            });
-        }).catch((error) => {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    const message = {
+                        from: isAuth._id,
+                        to: req.body.to,
+                        content: req.body.content
+                    }
+                    this._messageService.sendMessage(message).then((data) => {
+                        var io = req.app.get('socketio');
+                        try {
+                            onlineUsers[data.to._id].socketIds.forEach(socketId => {
+                                io.to(socketId).emit('receiveMessage', data);
+                            });
+                        } catch (error) {
+                            console.log('mesaj realtime gitmedi, kullanıcı yok yada online degil');
+                            console.log(error);
+                        }
+                        return res.json({
+                            'success': true,
+                            'data': data
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            })
+        } catch (error) {
             return res.json({
                 'success': false,
-                'error': error
+                'error': 'Unhandled error'
             });
-        });
-    }
-
-    list(req, res, next) {
-        this._messageRepository.list().then((data) => {
-            return res.json({
-                'success': true,
-                'data': data
-            });
-        }).catch((error) => {
-            return res.json({
-                'success': false,
-                'error': error
-            });
-        });
+        }
     }
 }

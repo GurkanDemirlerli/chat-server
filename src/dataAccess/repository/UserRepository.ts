@@ -45,8 +45,7 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
         let p = new Promise<IUser[]>((resolve, reject) => {
             UserSchema
                 .find({ 'name': new RegExp(name, 'i') })
-                .populate('SendedFriendShips')
-                .populate('AcceptedFriendShips')
+                .select('_id name email')
                 .limit(limit)
                 .skip(skip)
                 // .select('_id name email about')
@@ -86,6 +85,23 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
                     // select: 'acceptor'
                 })
 
+                .exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+        });
+        return p;
+    }
+
+
+    getProfileCard(userId): Promise<IUser> {
+        let p = new Promise<IUser>((resolve, reject) => {
+            UserSchema
+                .findById(userId)
+                .select('_id name email about')
                 .exec((err, res) => {
                     if (err) {
                         reject(err);

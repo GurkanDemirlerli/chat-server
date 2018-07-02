@@ -188,7 +188,7 @@ export class UserService implements IUserService {
         });
     }
 
-    searchUsers(name, limit, skip): Promise<IUser[]> {
+    searchUsers(name, limit?, skip?): Promise<IUser[]> {
         return new Promise<IUser[]>((resolve, reject) => {
             this._userRepository.searchUsers(name, limit, skip).then((res) => {
                 if (res) {
@@ -219,6 +219,20 @@ export class UserService implements IUserService {
                     reject('Error : Arkadas Degiller');
                 }
             })
+        });
+    }
+
+    getMyProfileCard(myId): Promise<IUser> {
+        return new Promise<IUser>((resolve, reject) => {
+            this._userRepository.getProfileCard(myId).then((profileCard) => {
+                if (profileCard) {
+                    resolve(profileCard);
+                } else {
+                    reject('Error : Boyle bir kullanici yok.');
+                }
+            }).catch((error) => {
+                reject(error);
+            });
         });
     }
 

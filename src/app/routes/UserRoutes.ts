@@ -26,5 +26,10 @@ export class UserRoutes {
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.findMyFriend(req, res, next));
         app.route('/api/users/getMessagesBetweenMyFriend/:friendId')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.getMessagesBetweenMyFriend(req, res, next));
-    }
+        app.route('/api/users/getMyProfileCard')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.getMyProfileCard(req, res, next));
+        app.route('/api/users/searchUsersByName')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.searchUsersByName(req, res, next));
+            
+        }
 }

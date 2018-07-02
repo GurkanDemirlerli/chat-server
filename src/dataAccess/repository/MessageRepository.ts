@@ -46,27 +46,6 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
         return p;
     }
 
-    // findMessagesBetweenMyFriend(myId: string, friendId: string) {
-    //     let p = new Promise<IMessage[]>((resolve, reject) => {
-    //         MessageSchema
-    //             .find({})
-    //             .where('from').in([myId, friendId])
-    //             .where('to').in([myId, friendId])
-    //             .populate('from', '_id name')
-    //             .populate('to', '_id name')
-    //             .sort('-createdAt')
-    //             // .select('_id content from to')
-    //             .exec((err, res) => {
-    //                 if (err) {
-    //                     reject(err);
-    //                 } else {
-    //                     resolve(res);
-    //                 }
-    //             });
-    //     });
-    //     return p;
-    // }
-
     findMessagesBetweenTwoUsers(requestorId: string, responderId: string) {
         let p = new Promise<IMessage[]>((resolve, reject) => {
             MessageSchema
@@ -77,6 +56,23 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
                 .populate('to', '_id name')
                 .sort('createdAt')
                 // .select('_id content from to')
+                .exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+        });
+        return p;
+    }
+
+    findMessage(messageId):Promise<IMessage> {
+        let p = new Promise<IMessage>((resolve, reject) => {
+            MessageSchema
+                .findById(messageId)
+                .populate('from', '_id name')
+                .populate('to', '_id name')
                 .exec((err, res) => {
                     if (err) {
                         reject(err);

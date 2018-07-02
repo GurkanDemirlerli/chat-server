@@ -296,4 +296,50 @@ export class UsersController {
         }
     }
 
+    getMyProfileCard(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    const myId = isAuth._id;
+                    this._userService.getMyProfileCard(myId).then((data) => {
+                        return res.json({
+                            'success': true,
+                            'data': data
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            })
+        } catch (error) {
+            return res.json({
+                'success': false,
+                'error': 'Unhandled error'
+            });
+        }
+    }
+
+    searchUsersByName(req, res, next) {
+        const name = req.query.name;
+        this._userService.searchUsers(name).then((data) => {
+            return res.json({
+                'success': true,
+                'data': data
+            });
+        }).catch((error) => {
+            return res.json({
+                'success': false,
+                'error': error
+            });
+        });
+    }
+
 }

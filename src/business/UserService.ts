@@ -188,10 +188,25 @@ export class UserService implements IUserService {
         });
     }
 
-    searchUsers(name, limit?, skip?): Promise<IUser[]> {
+    searchUsers(name, limit, skip, myId): Promise<IUser[]> {
         return new Promise<IUser[]>((resolve, reject) => {
             this._userRepository.searchUsers(name, limit, skip).then((res) => {
                 if (res) {
+                    res.forEach((user) => {
+                        this._friendShipRepository.arkadaslikKontrol(myId, user._id).then((arkadaslarMı) => {
+                            if (arkadaslarMı) {
+                                //arkadas iseler isfriend true olacak.
+                            } else {
+                                //isfriend false
+                            }
+                        }).catch((error) => {
+                            reject(error);
+                        });
+                        //Gonderilen arkadaslik istegi varmi diye kontrol yap.
+                            //varsa
+                                //giden arkadaslik istegi varsa friendShipSended true,
+                                //gelen arkadaslik istegi varsa friendShipSended false, clientte kabul et butonu cikacak.
+                    });
                     resolve(res);
                 } else {
                     reject('Error : sonuc bulunamadi.');

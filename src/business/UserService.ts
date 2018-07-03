@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ISignupModel, ILoginModel, IUser, IFriendRequest, IFriendShip } from './../models';
+import { ISignupModel, ILoginModel, IUser, IFriendRequest, IFriendShip, IUserSearchResultModel } from './../models';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../ioc/ioc-types.enum';
 import { IUserService } from 'src/business';
@@ -131,17 +131,58 @@ export class UserService implements IUserService {
         });
     }
 
-    rejectFriendShipRequest(friendRequestId: string): Promise<IFriendRequest> {
+    rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<IFriendRequest> {
         return new Promise<IFriendRequest>((resolve, reject) => {
-            this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
-                if (res) {
-                    resolve(res);
+            this._friendRequestRepository.findById(friendRequestId).then((res) => {
+
+                if (res.receiver.toString() == rejectorId) {
+                    this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
+                        if (res) {
+                            resolve(res);
+                        } else {
+                            reject('Error : sonuc bulunamadi.');
+                        }
+                    }).catch((error) => {
+                        reject(error);
+                    });
                 } else {
-                    reject('Error : sonuc bulunamadi.');
+                    console.log('Error: UnAuthorized');
+                    reject('Error: UnAuthorized');
                 }
             }).catch((error) => {
+                // console.log(error);
+                console.log('REJECT');
                 reject(error);
             });
+
+        });
+    }
+
+    cancelSendedFriendShipRequest(friendRequestId: string, iptalEden: string): Promise<IFriendRequest> {
+        console.log(friendRequestId);
+        return new Promise<IFriendRequest>((resolve, reject) => {
+            this._friendRequestRepository.findById(friendRequestId).then((res) => {
+
+                if (res.sender.toString() == iptalEden) {
+                    this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
+                        if (res) {
+                            resolve(res);
+                        } else {
+                            reject('Error : sonuc bulunamadi.');
+                        }
+                    }).catch((error) => {
+                        reject(error);
+                    });
+                } else {
+                    console.log('Error: UnAuthorized');
+                    reject('Error: UnAuthorized');
+                }
+            }).catch((error) => {
+                // console.log(error);
+                console.log('REJECT');
+                reject(error);
+            });
+
         });
     }
 
@@ -188,26 +229,64 @@ export class UserService implements IUserService {
         });
     }
 
-    searchUsers(name, limit, skip, myId): Promise<IUser[]> {
-        return new Promise<IUser[]>((resolve, reject) => {
-            this._userRepository.searchUsers(name, limit, skip).then((res) => {
+    searchUsers(name, limit, skip, myId): Promise<IUserSearchResultModel[]> {
+        return new Promise<IUserSearchResultModel[]>((resolve, reject) => {
+            let users: IUserSearchResultModel[] = [];
+            this._userRepository.searchUsers(name, limit, skip).then(async (res) => {
                 if (res) {
-                    res.forEach((user) => {
-                        this._friendShipRepository.arkadaslikKontrol(myId, user._id).then((arkadaslarMı) => {
-                            if (arkadaslarMı) {
-                                //arkadas iseler isfriend true olacak.
-                            } else {
-                                //isfriend false
-                            }
-                        }).catch((error) => {
-                            reject(error);
-                        });
-                        //Gonderilen arkadaslik istegi varmi diye kontrol yap.
-                            //varsa
-                                //giden arkadaslik istegi varsa friendShipSended true,
-                                //gelen arkadaslik istegi varsa friendShipSended false, clientte kabul et butonu cikacak.
+                    await res.forEach(async (userRes, index) => {
+                        let user: IUserSearchResultModel = <IUserSearchResultModel>new Object();
+                        user._id = userRes._id;
+                        user.name = userRes.name;
+                        user.email = userRes.email;
+                        if (user._id.toString() != myId) {
+                            await this._friendShipRepository.arkadaslikKontrol(myId, userRes._id).then((arkadaslarMı) => {
+                                if (arkadaslarMı) {
+                                    user.isFriend = true;
+                                    //arkadas iseler isfriend true olacak.
+                                } else {
+                                    user.isFriend = false;
+                                }
+                            }).catch((error) => {
+                                reject(error);
+                            });
+
+                            await this._friendRequestRepository.gidenArkadaslikIstegiVarmi(myId, userRes._id).then((gidenIstekVar) => {
+                                if (gidenIstekVar) {
+                                    user.isSendedRequestWaiting = true;
+                                    user.sendedRequestWaiting = gidenIstekVar;
+                                } else {
+                                    user.isSendedRequestWaiting = false;
+                                }
+                            }).catch((error) => {
+                                user.isSendedRequestWaiting = false;
+                            });
+
+                            await this._friendRequestRepository.gelenArkadaslikIstegiVarmi(myId, userRes._id).then((gelenIstekVar) => {
+                                if (gelenIstekVar) {
+                                    user.isReceivedRequestWaiting = true;
+                                    user.receivedRequestWaiting = gelenIstekVar;
+                                } else {
+                                    user.isReceivedRequestWaiting = false;
+                                }
+                            }).catch((error) => {
+                                user.isReceivedRequestWaiting = false;
+                            });
+                            user.isSelf = false;
+                        } else {
+                            user.isSelf = true;
+                            user.isReceivedRequestWaiting = false;
+                            user.isSendedRequestWaiting = false;
+                            user.isFriend = false;
+                        }
+                        console.log('UP', user);
+                        users.push(user);
+                        if (users.length === res.length) {
+                            console.log('DOWN', users);
+                            resolve(users);
+                        }
                     });
-                    resolve(res);
+
                 } else {
                     reject('Error : sonuc bulunamadi.');
                 }

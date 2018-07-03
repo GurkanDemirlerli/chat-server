@@ -1,9 +1,9 @@
-import { IMessageService, INotificationService, AuthenticationService } from './../../business';
+import { IMessageService, AuthenticationService } from './../../business';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from './../../ioc/ioc-types.enum';
-import 'reflect-metadata';
-import { IMessageRepository } from '../../dataAccess/repository';
 import { onlineUsers } from '../../socket/online-users';
+import 'reflect-metadata';
+
 
 @injectable()
 export class MessagesController {

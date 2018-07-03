@@ -4,6 +4,7 @@ export { ISignupModel } from './DataTransferObjects/abstract/ISignupModel';
 export { ITokenModel } from './DataTransferObjects/abstract/ITokenModel';
 export { ISocketMessage } from './DataTransferObjects/abstract/ISocketMessage';
 export { IFriendRequestCreateModel } from './DataTransferObjects/abstract/IFriendRequestCreateModel';
+export { IUserSearchResultModel } from './DataTransferObjects/abstract/IUserSearchResultModel';
 
 
 export { SignupModel } from './DataTransferObjects/concrete/SignupModel';

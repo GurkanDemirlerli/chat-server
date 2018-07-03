@@ -7,6 +7,7 @@ import { SocketHandler } from '../socket/socket-handler';
 import {
     MessagesController,
     UsersController,
+    FriendShipController,
 } from './../app/controllers';
 //#endregion
 
@@ -30,12 +31,14 @@ import {
     MessageService,
     UserService,
     NotificationService,
+    FriendShipService,
 
 } from './../business';
 import {
     IMessageService,
     IUserService,
-    INotificationService
+    INotificationService,
+    IFriendShipService
 
 } from './../business';
 //#endregion
@@ -45,7 +48,7 @@ export module IOC {
     export const container = new Container()
 
     export function configureContainer(): Container {
-        
+
         container
             .bind<SocketHandler>(SocketHandler)
             .toSelf()
@@ -58,6 +61,10 @@ export module IOC {
 
         container
             .bind<UsersController>(UsersController)
+            .toSelf()
+
+        container
+            .bind<FriendShipController>(FriendShipController)
             .toSelf()
 
         //#endregion
@@ -95,6 +102,10 @@ export module IOC {
         container
             .bind<INotificationService>(IOCTYPES.NOTIFICATION_SERVICE)
             .to(NotificationService)
+
+        container
+            .bind<IFriendShipService>(IOCTYPES.FRIEND_SHIP_SERVICE)
+            .to(FriendShipService)
 
 
 

@@ -6,5 +6,6 @@ export enum IOCTYPES {
 
     USER_SERVICE = 'UserService',
     MESSAGE_SERVICE = 'MessageService',
-    NOTIFICATION_SERVICE = "NotificationService"
+    NOTIFICATION_SERVICE = "NotificationService",
+    FRIEND_SHIP_SERVICE = "FriendShipService"
 }

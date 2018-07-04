@@ -5,6 +5,7 @@ export { ITokenModel } from './DataTransferObjects/abstract/ITokenModel';
 export { ISocketMessage } from './DataTransferObjects/abstract/ISocketMessage';
 export { IFriendRequestCreateModel } from './DataTransferObjects/abstract/IFriendRequestCreateModel';
 export { IUserSearchResultModel } from './DataTransferObjects/abstract/IUserSearchResultModel';
+export { ILocalNotificationType } from './DataTransferObjects/abstract/ILocalNotificationType';
 
 
 export { SignupModel } from './DataTransferObjects/concrete/SignupModel';
@@ -20,5 +21,5 @@ export { ITask } from './DataAccessObjects/abstract/ITask';
 export { IMessage } from './DataAccessObjects/abstract/IMessage';
 export { IFriendShip } from './DataAccessObjects/abstract/IFriendShip';
 export { IFriendRequest } from './DataAccessObjects/abstract/IFriendRequest';
-
+export { ILocalNotification } from './DataAccessObjects/abstract/ILocalNotification';
 //#endregion

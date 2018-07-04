@@ -1,12 +1,24 @@
-import 'reflect-metadata';
-import { ISignupModel, ILoginModel, IUser, IFriendRequest, IFriendShip, IUserSearchResultModel } from './../models';
+import {
+    ISignupModel,
+    ILoginModel,
+    IUser,
+    IFriendRequest,
+    IFriendShip,
+    IUserSearchResultModel,
+    ILocalNotification
+} from './../models';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../ioc/ioc-types.enum';
 import { IUserService } from 'src/business';
-import { IUserRepository, IFriendRequestRepository, IFriendShipRepository } from './../dataAccess/repository';
+import {
+    IUserRepository,
+    IFriendRequestRepository,
+    IFriendShipRepository,
+    ILocalNotificationRepository
+} from './../dataAccess/repository';
 import * as jwt from 'jsonwebtoken';
-// import { AuthenticationService } from './';
-import { onlineUsers } from '../socket/online-users';
+import 'reflect-metadata';
+import { LocalNotificationTypes } from '../util/local-notification-types/local-notification-types.enum';
 
 @injectable()
 export class UserService implements IUserService {
@@ -15,6 +27,7 @@ export class UserService implements IUserService {
         @inject(IOCTYPES.USER_REPOSITORY) private _userRepository: IUserRepository,
         @inject(IOCTYPES.FRIENDREQUEST_REPOSITORY) private _friendRequestRepository: IFriendRequestRepository,
         @inject(IOCTYPES.FRIENDSHIP_REPOSITORY) private _friendShipRepository: IFriendShipRepository,
+        @inject(IOCTYPES.LOCALNOTIFICATION_REPOSITORY) private _localNotificationRepository: ILocalNotificationRepository,
     ) { }
 
     signup(item: ISignupModel): Promise<IUser> {
@@ -80,8 +93,6 @@ export class UserService implements IUserService {
         return p;
     }
 
-
-
     sendFriendShipRequest(item: IFriendRequest): Promise<IFriendRequest> {
         return new Promise<IFriendRequest>((resolve, reject) => {
             this._friendRequestRepository.create(item).then((res) => {
@@ -105,7 +116,17 @@ export class UserService implements IUserService {
                         if (res) {
                             this.beFriends({ sender: res.sender, acceptor: res.receiver }).then((res) => {
                                 if (res) {
-                                    resolve(res);
+                                    let notificationModel: ILocalNotification = <ILocalNotification>{
+                                        contentType: LocalNotificationTypes.FRIEND_REQUEST_ACCEPTED,
+                                        from: res.acceptor,
+                                        to: res.sender
+                                    };
+                                    this._localNotificationRepository.create(notificationModel).then((notification) => {
+                                        resolve(res);
+                                    }).catch((error) => {
+                                        resolve(res);
+                                        console.log('Error: Bildirim Eklenmedi');
+                                    });
                                 } else {
                                     reject('Error : sonuc bulunamadi.');
                                 }
@@ -330,7 +351,16 @@ export class UserService implements IUserService {
         });
     }
 
-}
+    getMyNotifications(myId: string): Promise<ILocalNotification[]> {
+        return new Promise<ILocalNotification[]>((resolve, reject) => {
+            this._localNotificationRepository.findNotificationsForOne(myId).then((res) => {
+                console.log(res);
+                resolve(res);
+            }).catch((error) => {
+                console.log(error);
+                reject(error);
+            });
+        });
+    }
 
-//========== TO DO =========
-//  * Token üretimi AuthenticationService içinde olacak.
+}

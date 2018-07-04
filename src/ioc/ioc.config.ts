@@ -17,12 +17,14 @@ import {
     FriendShipRepository,
     FriendRequestRepository,
     UserRepository,
+    LocalNotificationRepository,
 } from './../dataAccess/repository';
 import {
     IMessageRepository,
     IUserRepository,
     IFriendShipRepository,
     IFriendRequestRepository,
+    ILocalNotificationRepository,
 } from './../dataAccess/repository';
 //#endregion
 
@@ -86,6 +88,10 @@ export module IOC {
         container
             .bind<IFriendRequestRepository>(IOCTYPES.FRIENDREQUEST_REPOSITORY)
             .to(FriendRequestRepository)
+
+        container
+            .bind<ILocalNotificationRepository>(IOCTYPES.LOCALNOTIFICATION_REPOSITORY)
+            .to(LocalNotificationRepository)
 
         //#endregion
 

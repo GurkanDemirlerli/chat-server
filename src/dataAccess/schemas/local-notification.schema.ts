@@ -1,16 +1,15 @@
 import DataAccess = require('../Connection');
 import { Schema } from 'mongoose';
-import { IMessage } from '../../models';
+import { ILocalNotification } from '../../models';
 var mongoose = DataAccess.mongooseInstance;
 var mongooseConnection = DataAccess.mongooseConnection;
 
-class MessageSchema {
+class LocalNotificationSchema {
 
     static get schema() {
         var schema = new Schema({
-            content: {
-                type: String,
-                required: true
+            contentType: {
+                type: Number
             },
             from: {
                 type: Schema.Types.ObjectId,
@@ -32,5 +31,5 @@ class MessageSchema {
         return schema;
     }
 }
-var schema = mongooseConnection.model<IMessage>('Message', MessageSchema.schema);
+var schema = mongooseConnection.model<ILocalNotification>('LocalNotification', LocalNotificationSchema.schema);
 export = schema;

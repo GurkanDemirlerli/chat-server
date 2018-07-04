@@ -263,7 +263,6 @@ export class UsersController {
         }
     }
 
-
     getMessagesBetweenMyFriend(req, res, next) {
         try {
             AuthenticationService.checkAuthentication(req).then((isAuth) => {
@@ -362,6 +361,41 @@ export class UsersController {
             });
         }
 
+    }
+
+    getMyNotifications(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    this._userService.getMyNotifications(isAuth._id).then((data) => {
+                        return res.json({
+                            'success': true,
+                            'data': data
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            }).catch((error) => {
+                return res.json({
+                    'success': false,
+                    'error': error
+                });
+            });
+        } catch (error) {
+            return res.json({
+                'success': false,
+                'error': 'Unhandled error'
+            });
+        }
     }
 
 }

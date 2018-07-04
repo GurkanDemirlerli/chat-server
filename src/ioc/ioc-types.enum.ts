@@ -3,6 +3,7 @@ export enum IOCTYPES {
     MESSAGE_REPOSITORY = 'MessageRepository',
     FRIENDSHIP_REPOSITORY = 'FriendShipRepository',
     FRIENDREQUEST_REPOSITORY = 'FriendRequestRepository',
+    LOCALNOTIFICATION_REPOSITORY = "LocalNotificationRepository",
 
     USER_SERVICE = 'UserService',
     MESSAGE_SERVICE = 'MessageService',

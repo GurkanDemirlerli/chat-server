@@ -24,4 +24,19 @@ export class LocalNotificationRepository extends RepositoryBase<ILocalNotificati
                 });
         });
     }
+    findUnreadedNotificationsCount(userId: string): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            LocalNotificationSchema
+                .find({ to: userId, isRead: false })
+                .count()
+                .exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+        });
+    }
+
 }

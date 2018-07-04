@@ -32,6 +32,9 @@ export class UserRoutes {
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.searchUsersByName(req, res, next));
         app.route('/api/users/getMyNotifications')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.getMyNotifications(req, res, next));
-            
-        }
+        app.route('/api/users/getUnReadedNotificationsCount')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.getUnReadedNotificationsCount(req, res, next));
+        
+
+    }
 }

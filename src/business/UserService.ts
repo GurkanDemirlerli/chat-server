@@ -363,4 +363,15 @@ export class UserService implements IUserService {
         });
     }
 
+    getUnReadedNotificationsCount(myId: string): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            this._localNotificationRepository.findUnreadedNotificationsCount(myId).then((res) => {
+                console.log(res);
+                resolve(res);
+            }).catch((error) => {
+                reject(error);
+            })
+        });
+    }
+
 }

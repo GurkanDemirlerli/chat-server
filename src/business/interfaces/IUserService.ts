@@ -22,4 +22,5 @@ export interface IUserService {
     findMyFriend(myId, friendId): Promise<IUser>;
     getMyProfileCard(myId): Promise<IUser>;
     getMyNotifications(myId: string): Promise<ILocalNotification[]>;
+    getUnReadedNotificationsCount(myId: string): Promise<number>;
 }

@@ -398,4 +398,39 @@ export class UsersController {
         }
     }
 
+    getUnReadedNotificationsCount(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    this._userService.getUnReadedNotificationsCount(isAuth._id).then((data) => {
+                        return res.json({
+                            'success': true,
+                            'data': data
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            }).catch((error) => {
+                return res.json({
+                    'success': false,
+                    'error': error
+                });
+            });
+        } catch (error) {
+            return res.json({
+                'success': false,
+                'error': 'Unhandled error'
+            });
+        }
+    }
+
 }

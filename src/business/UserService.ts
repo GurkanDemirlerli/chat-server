@@ -107,8 +107,8 @@ export class UserService implements IUserService {
         });
     }
 
-    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<IFriendShip> {
-        return new Promise<IFriendShip>((resolve, reject) => {
+    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any[]> {
+        return new Promise<any[]>((resolve, reject) => {
             this._friendRequestRepository.findById(friendRequestId).then((res) => {
 
                 if (res.receiver.toString() == acceptorId) {
@@ -122,9 +122,9 @@ export class UserService implements IUserService {
                                         to: res.sender
                                     };
                                     this._localNotificationRepository.create(notificationModel).then((notification) => {
-                                        resolve(res);
+                                        resolve([res, notification]);
                                     }).catch((error) => {
-                                        resolve(res);
+                                        resolve([res, error]);//Daha sonra düzelt
                                         console.log('Error: Bildirim Eklenmedi');
                                     });
                                 } else {
@@ -159,7 +159,17 @@ export class UserService implements IUserService {
                 if (res.receiver.toString() == rejectorId) {
                     this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
                         if (res) {
-                            resolve(res);
+                            let notificationModel: ILocalNotification = <ILocalNotification>{
+                                contentType: LocalNotificationTypes.FRIEND_REQUEST_REJECTED,
+                                from: res.receiver,
+                                to: res.sender
+                            };
+                            this._localNotificationRepository.create(notificationModel).then((notification) => {
+                                resolve(res);
+                            }).catch((error) => {
+                                resolve(res);
+                                console.log('Error: Bildirim Eklenmedi');
+                            });
                         } else {
                             reject('Error : sonuc bulunamadi.');
                         }
@@ -366,6 +376,17 @@ export class UserService implements IUserService {
     getUnReadedNotificationsCount(myId: string): Promise<number> {
         return new Promise<number>((resolve, reject) => {
             this._localNotificationRepository.findUnreadedNotificationsCount(myId).then((res) => {
+                console.log(res);
+                resolve(res);
+            }).catch((error) => {
+                reject(error);
+            })
+        });
+    }
+
+    makeAllNotificationsReaded(myId: string): Promise<Boolean> {
+        return new Promise<Boolean>((resolve, reject) => {
+            this._localNotificationRepository.makeAllNotificationsReadedForOne(myId).then((res) => {
                 console.log(res);
                 resolve(res);
             }).catch((error) => {

@@ -67,7 +67,7 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
         return p;
     }
 
-    findMessage(messageId):Promise<IMessage> {
+    findMessage(messageId): Promise<IMessage> {
         let p = new Promise<IMessage>((resolve, reject) => {
             MessageSchema
                 .findById(messageId)
@@ -82,5 +82,19 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
                 });
         });
         return p;
+    }
+
+    makeAllReceivedMessagesReadedFromUser(receiverId: string, senderId: string): Promise<Boolean> {
+        return new Promise<Boolean>((resolve, reject) => {
+            MessageSchema
+                .updateMany({ to: receiverId, from: senderId, isRead: false }, { isRead: true })
+                .exec((err, res) => {
+                    if (err) {
+                        reject(false);
+                    } else {
+                        resolve(true);
+                    }
+                });
+        });
     }
 }

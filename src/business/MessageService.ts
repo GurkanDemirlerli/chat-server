@@ -77,4 +77,18 @@ export class MessageService implements IMessageService {
             })
         });
     }
+
+    makeAllReceivedMessagesReadedFromMyFriend(myId: string, friendId: string): Promise<Boolean> {
+        return new Promise<any>((resolve, reject) => {
+            this._messageRepository.makeAllReceivedMessagesReadedFromUser(myId, friendId).then((res) => {
+                if (res) {
+                    resolve(true);
+                } else {
+                    reject(false);
+                }
+            }).catch((error) => {
+                reject(error);
+            });
+        });
+    }
 }

@@ -5,4 +5,5 @@ export interface IMessageService {
     list: () => any;
     findMessagesBetweenMyFriend(myId: string, friendId: string): Promise<IMessage[]>;
     sendMessage(message);
+    makeAllReceivedMessagesReadedFromMyFriend(myId: string, friendId: string): Promise<Boolean>;
 }

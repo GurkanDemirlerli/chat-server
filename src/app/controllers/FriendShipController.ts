@@ -2,6 +2,7 @@ import { AuthenticationService, IUserService } from './../../business';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from './../../ioc/ioc-types.enum';
 import 'reflect-metadata';
+import { onlineUsers } from '../../socket/online-users';
 
 @injectable()
 export class FriendShipController {
@@ -53,10 +54,21 @@ export class FriendShipController {
             AuthenticationService.checkAuthentication(req).then((isAuth) => {
                 if (isAuth) {
                     const friendShipRequestId = req.body.friendShipRequestId;
-                    this._userService.acceptFriendShipRequest(friendShipRequestId, isAuth._id).then((data) => {
+                    this._userService.acceptFriendShipRequest(friendShipRequestId, isAuth._id).then(([friendship, notification]) => {
+                        var io = req.app.get('socketio');
+                        console.log('notification: ', notification);
+                        try {
+                            onlineUsers[(friendship.sender as string)].socketIds.forEach(socketId => {
+                                io.to(socketId).emit('receiveLocalNotification', notification);
+                            });
+                        } catch (error) {
+                            console.log('bildirim realtime gitmedi, kullanıcı yok yada online degil');
+                            console.log(error);
+                        }
+
                         return res.json({
                             'success': true,
-                            'data': data
+                            'data': friendship
                         });
                     }).catch((error) => {
                         return res.json({

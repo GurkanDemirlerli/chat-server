@@ -14,7 +14,7 @@ export interface IUserService {
     changeNotificationId(userId, notifyId): Promise<any>;
     deleteNotificationId(userId): Promise<any>;
     sendFriendShipRequest(item): Promise<IFriendRequest>;
-    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<IFriendShip>;
+    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any[]> ;
     rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<IFriendRequest>;
     cancelSendedFriendShipRequest(friendRequestId: string, iptalEden: string): Promise<IFriendRequest>;
     listMyFriends(myId: string): Promise<any[]>;
@@ -23,4 +23,5 @@ export interface IUserService {
     getMyProfileCard(myId): Promise<IUser>;
     getMyNotifications(myId: string): Promise<ILocalNotification[]>;
     getUnReadedNotificationsCount(myId: string): Promise<number>;
+    makeAllNotificationsReaded(myId: string): Promise<Boolean>;
 }

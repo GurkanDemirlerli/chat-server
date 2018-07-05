@@ -24,6 +24,7 @@ export class LocalNotificationRepository extends RepositoryBase<ILocalNotificati
                 });
         });
     }
+    
     findUnreadedNotificationsCount(userId: string): Promise<number> {
         return new Promise<number>((resolve, reject) => {
             LocalNotificationSchema
@@ -34,6 +35,20 @@ export class LocalNotificationRepository extends RepositoryBase<ILocalNotificati
                         reject(err);
                     } else {
                         resolve(res);
+                    }
+                });
+        });
+    }
+
+    makeAllNotificationsReadedForOne(userId: string): Promise<Boolean> {
+        return new Promise<Boolean>((resolve, reject) => {
+            LocalNotificationSchema
+                .updateMany({ to: userId, isRead: false }, { isRead: true })
+                .exec((err, res) => {
+                    if (err) {
+                        reject(false);
+                    } else {
+                        resolve(true);
                     }
                 });
         });

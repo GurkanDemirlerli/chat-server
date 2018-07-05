@@ -55,4 +55,44 @@ export class MessagesController {
             });
         }
     }
+
+    makeAllReceivedMessagesReadedFromMyFriend(req, res, next) {
+        try {
+            AuthenticationService.checkAuthentication(req).then((isAuth) => {
+                if (isAuth) {
+                    const friendId = req.params.friendId;
+                    this._messageService.makeAllReceivedMessagesReadedFromMyFriend(isAuth._id, friendId).then((data) => {
+                        var io = req.app.get('socketio');
+                        try {
+                            onlineUsers[friendId].socketIds.forEach(socketId => {
+                                io.to(socketId).emit('messagesReaded', friendId);
+                            });
+                        } catch (error) {
+                            console.log('mesaj realtime gitmedi, kullanıcı yok yada online degil');
+                            console.log(error);
+                        }
+                        return res.json({
+                            'success': true,
+                            'data': data
+                        });
+                    }).catch((error) => {
+                        return res.json({
+                            'success': false,
+                            'error': error
+                        });
+                    });
+                } else {
+                    return res.json({
+                        'success': false,
+                        'error': 'UnAuthorized'
+                    });
+                }
+            })
+        } catch (error) {
+            return res.json({
+                'success': false,
+                'error': 'Unhandled error'
+            });
+        }
+    }
 }

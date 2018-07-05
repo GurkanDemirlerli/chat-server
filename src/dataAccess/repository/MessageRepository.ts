@@ -85,10 +85,13 @@ export class MessageRepository extends RepositoryBase<IMessage> implements IMess
     }
 
     makeAllReceivedMessagesReadedFromUser(receiverId: string, senderId: string): Promise<Boolean> {
+        console.log(receiverId);
+        console.log(senderId);
         return new Promise<Boolean>((resolve, reject) => {
             MessageSchema
                 .updateMany({ to: receiverId, from: senderId, isRead: false }, { isRead: true })
                 .exec((err, res) => {
+                    console.log('RES:', res);
                     if (err) {
                         reject(false);
                     } else {

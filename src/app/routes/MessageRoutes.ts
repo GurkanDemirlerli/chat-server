@@ -10,7 +10,7 @@ export class MessageRoutes {
 
         app.route('/api/messages/add')
             .post(AuthenticationService.authenticatedRoute, (req, res, next) => messagesController.add(req, res, next));
-        app.route('/api/messages/makeAllReceivedMessagesReadedFromMyFriend:friendId')
+        app.route('/api/messages/makeAllReceivedMessagesReadedFromMyFriend/:friendId')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => messagesController.makeAllReceivedMessagesReadedFromMyFriend(req, res, next));
     }
 }

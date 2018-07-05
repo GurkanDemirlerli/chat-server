@@ -65,7 +65,7 @@ export class MessagesController {
                         var io = req.app.get('socketio');
                         try {
                             onlineUsers[friendId].socketIds.forEach(socketId => {
-                                io.to(socketId).emit('messagesReaded', friendId);
+                                io.to(socketId).emit('messagesReaded', isAuth._id);
                             });
                         } catch (error) {
                             console.log('mesaj realtime gitmedi, kullanıcı yok yada online degil');

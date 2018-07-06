@@ -14,7 +14,8 @@ import {
     IUserRepository,
     IFriendRequestRepository,
     IFriendShipRepository,
-    ILocalNotificationRepository
+    ILocalNotificationRepository,
+    IMessageRepository
 } from './../dataAccess/repository';
 import * as jwt from 'jsonwebtoken';
 import 'reflect-metadata';
@@ -28,6 +29,7 @@ export class UserService implements IUserService {
         @inject(IOCTYPES.FRIENDREQUEST_REPOSITORY) private _friendRequestRepository: IFriendRequestRepository,
         @inject(IOCTYPES.FRIENDSHIP_REPOSITORY) private _friendShipRepository: IFriendShipRepository,
         @inject(IOCTYPES.LOCALNOTIFICATION_REPOSITORY) private _localNotificationRepository: ILocalNotificationRepository,
+        @inject(IOCTYPES.MESSAGE_REPOSITORY) private _messageRepository: IMessageRepository,
     ) { }
 
     signup(item: ISignupModel): Promise<IUser> {
@@ -244,7 +246,7 @@ export class UserService implements IUserService {
             this._userRepository.listMyFriends(myId).then((res) => {
                 if (res) {
                     let friends = [];
-                    res.AcceptedFriendShips.forEach((friendship) => {
+                    res.AcceptedFriendShips.forEach((friendship) => { 
                         friends.push(friendship.sender);
                     });
                     res.SendedFriendShips.forEach((friendship) => {

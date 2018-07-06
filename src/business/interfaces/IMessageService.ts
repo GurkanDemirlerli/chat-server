@@ -6,4 +6,5 @@ export interface IMessageService {
     findMessagesBetweenMyFriend(myId: string, friendId: string): Promise<IMessage[]>;
     sendMessage(message);
     makeAllReceivedMessagesReadedFromMyFriend(myId: string, friendId: string): Promise<Boolean>;
+    findUnreadedMessagesCount(myId: string, friendId: string): Promise<number>;
 }

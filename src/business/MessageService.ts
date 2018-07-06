@@ -91,4 +91,14 @@ export class MessageService implements IMessageService {
             });
         });
     }
+
+    findUnreadedMessagesCount(myId: string, friendId: string): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            this._messageRepository.findUnreadedMessagesCount(myId, friendId).then((unReadedMessagesCount) => {
+                resolve(unReadedMessagesCount);
+            }).catch((error) => {
+                reject(error);
+            });
+        });
+    }
 }

@@ -134,24 +134,32 @@ export class UsersController {
                     const myId = isAuth._id;
                     this._userService.listMyFriends(myId).then((data) => {
                         let friends = [];
+                        let iterator = 0;
                         data.forEach(friend => {
                             if (onlineUsers[friend._id]) {
                                 friend.status = 'online';
                             } else {
                                 friend.status = 'offline';
                             }
-                            friends.push({
-                                _id: friend._id,
-                                email: friend.email,
-                                name: friend.name,
-                                about: friend.about,
-                                status: friend.status
+                            this._messageService.findUnreadedMessagesCount(myId, friend._id).then((unReadedMessagesCount) => {
+                                friends.push({
+                                    _id: friend._id,
+                                    email: friend.email,
+                                    name: friend.name,
+                                    about: friend.about,
+                                    status: friend.status,
+                                    unReadedMessagesCount: unReadedMessagesCount
+                                });
+                                iterator++;
+                                if (iterator == data.length) {
+                                    return res.json({
+                                        'success': true,
+                                        'data': friends
+                                    });
+                                }
                             });
                         });
-                        return res.json({
-                            'success': true,
-                            'data': friends
-                        });
+
                     }).catch((error) => {
                         return res.json({
                             'success': false,

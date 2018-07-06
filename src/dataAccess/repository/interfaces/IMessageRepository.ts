@@ -6,4 +6,5 @@ export interface IMessageRepository extends IRepositoryBase<IMessage> {
     findMessagesBetweenTwoUsers(requestorId: string, responderId: string);
     findMessage(messageId): Promise<IMessage>;
     makeAllReceivedMessagesReadedFromUser(receiverId: string, senderId: string): Promise<Boolean>;
+    findUnreadedMessagesCount(receiverId: string, senderId: string): Promise<number>;
 }

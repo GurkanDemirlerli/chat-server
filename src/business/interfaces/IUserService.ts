@@ -15,7 +15,7 @@ export interface IUserService {
     deleteNotificationId(userId): Promise<any>;
     sendFriendShipRequest(item): Promise<IFriendRequest>;
     acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any[]> ;
-    rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<IFriendRequest>;
+    rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<any[]>;
     cancelSendedFriendShipRequest(friendRequestId: string, iptalEden: string): Promise<IFriendRequest>;
     listMyFriends(myId: string): Promise<any[]>;
     searchUsers(name, limit, skip, myId): Promise<IUserSearchResultModel[]>

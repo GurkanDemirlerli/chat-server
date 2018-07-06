@@ -154,8 +154,8 @@ export class UserService implements IUserService {
         });
     }
 
-    rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<IFriendRequest> {
-        return new Promise<IFriendRequest>((resolve, reject) => {
+    rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<any[]> {
+        return new Promise<any[]>((resolve, reject) => {
             this._friendRequestRepository.findById(friendRequestId).then((res) => {
 
                 if (res.receiver.toString() == rejectorId) {
@@ -167,9 +167,9 @@ export class UserService implements IUserService {
                                 to: res.sender
                             };
                             this._localNotificationRepository.create(notificationModel).then((notification) => {
-                                resolve(res);
+                                resolve([res, notification]);
                             }).catch((error) => {
-                                resolve(res);
+                                resolve([res, error]);//Daha sonra düzelt
                                 console.log('Error: Bildirim Eklenmedi');
                             });
                         } else {
@@ -246,7 +246,7 @@ export class UserService implements IUserService {
             this._userRepository.listMyFriends(myId).then((res) => {
                 if (res) {
                     let friends = [];
-                    res.AcceptedFriendShips.forEach((friendship) => { 
+                    res.AcceptedFriendShips.forEach((friendship) => {
                         friends.push(friendship.sender);
                     });
                     res.SendedFriendShips.forEach((friendship) => {

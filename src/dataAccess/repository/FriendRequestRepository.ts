@@ -104,4 +104,43 @@ export class FriendRequestRepository extends RepositoryBase<IFriendRequest> impl
         return p;
     }
 
+    getReceivedFriendRequestsCount(userId: string): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            FriendRequestSchema
+                .find({ receiver: userId, status: 0 })
+                .count()
+                .exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+        });
+    }
+
+    getAllFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]> {
+        return new Promise<IFriendRequest[]>((resolve, reject) => {
+            FriendRequestSchema
+                .find({})
+                .or([{
+                    receiver: userId,
+                    status: 0
+                }, {
+                    sender: userId,
+                    status: 0
+                }
+                ])
+                .populate('receiver', '_id name email')
+                .populate('sender', '_id name email')
+                .exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+        });
+    }
+
 }

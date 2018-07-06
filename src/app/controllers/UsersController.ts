@@ -135,6 +135,12 @@ export class UsersController {
                     this._userService.listMyFriends(myId).then((data) => {
                         let friends = [];
                         let iterator = 0;
+                        if (data.length < 1) {
+                            return res.json({
+                                'success': true,
+                                'data': []
+                            });
+                        }
                         data.forEach(friend => {
                             if (onlineUsers[friend._id]) {
                                 friend.status = 'online';
@@ -475,5 +481,4 @@ export class UsersController {
             });
         }
     }
-
 }

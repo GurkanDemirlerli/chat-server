@@ -7,4 +7,6 @@ export interface IFriendRequestRepository extends IRepositoryBase<IFriendRequest
     cancelRequest(friendRequestId: string): Promise<any>;
     gidenArkadaslikIstegiVarmi(myId, otherId): Promise<String>;
     gelenArkadaslikIstegiVarmi(myId, otherId): Promise<String>;
+    getReceivedFriendRequestsCount(userId: string): Promise<number> ;
+    getAllFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]>
 }

@@ -20,6 +20,13 @@ export class FriendShipRoutes {
         app.route('/api/friendship/cancelSendedFriendShipRequest')
             .post(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.cancelSendedFriendShipRequest(req, res, next));
 
+        app.route('/api/friendship/getReceivedFriendRequestsCount')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.getReceivedFriendRequestsCount(req, res, next));
+
+        app.route('/api/friendship/getMyAllFriendShipRequests')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.getMyAllFriendShipRequests(req, res, next));
+
+
         // app.route('/api/friendship/removeFriendShip')
         //     .post(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.removeFriendShip(req, res, next));
     }

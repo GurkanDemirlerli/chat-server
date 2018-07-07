@@ -36,6 +36,8 @@ export class UserRoutes {
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.getUnReadedNotificationsCount(req, res, next));
         app.route('/api/users/makeAllNotificationsReaded')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => usersController.makeAllNotificationsReaded(req, res, next));
+        app.route('/api/users/controlUniquenessForEmail/:email')
+            .get((req, res, next) => usersController.controlUniquenessForEmail(req, res, next));
         
 
     }

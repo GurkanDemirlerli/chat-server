@@ -397,4 +397,18 @@ export class UserService implements IUserService {
         });
     }
 
+    controlUniquenessForEmail(email: string): Promise<Boolean> {
+        return new Promise<Boolean>((resolve, reject) => {
+            this._userRepository.find({ email: email }, {}, {}).then((res) => {
+                if (res.length > 0) {
+                    reject(false);
+                } else {
+                    resolve(true);
+                }
+            }).catch((error) => {
+                reject(error);
+            })
+        });
+    }
+
 }

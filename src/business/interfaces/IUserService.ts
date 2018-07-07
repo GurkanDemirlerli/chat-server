@@ -24,4 +24,5 @@ export interface IUserService {
     getMyNotifications(myId: string): Promise<ILocalNotification[]>;
     getUnReadedNotificationsCount(myId: string): Promise<number>;
     makeAllNotificationsReaded(myId: string): Promise<Boolean>;
+    controlUniquenessForEmail(email: string): Promise<Boolean>;
 }

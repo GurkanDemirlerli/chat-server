@@ -481,4 +481,19 @@ export class UsersController {
             });
         }
     }
+
+
+    controlUniquenessForEmail(req, res, next) {
+        const email = req.params.email;
+        this._userService.controlUniquenessForEmail(email).then((data) => {
+            return res.json({
+                'success': true
+            });
+        }).catch((error) => {
+            return res.json({
+                'success': false,
+                'error': error
+            });
+        });
+    }
 }

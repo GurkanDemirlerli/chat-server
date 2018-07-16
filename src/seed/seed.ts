@@ -1,24 +1,31 @@
 import { inject, injectable } from "inversify";
 import { IOCTYPES } from "../ioc";
-import { IUserService, IMessageService } from "../business";
 import {
-    SignupInput
+    IUserService,
+    IMessageService,
+    IFriendShipService
+} from "../business";
+import {
+    SignupInput, FriendshipRequestCreateModel
 } from '../models';
 import * as faker from 'faker';
+import { IUser } from '../models/DataAccessObjects/abstract/IUser';
 
 @injectable()
 export class SeedDatabase {
 
     constructor(
         @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService,
-        @inject(IOCTYPES.MESSAGE_SERVICE) private _messsageService: IMessageService
+        @inject(IOCTYPES.MESSAGE_SERVICE) private _messsageService: IMessageService,
+        @inject(IOCTYPES.FRIEND_SHIP_SERVICE) private _friendshipService: IFriendShipService
     ) {
     }
 
     public initialize() {
+        const USERCOUNT = 250;
         let users = [];
         let promises = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < USERCOUNT; i++) {
             let username = faker.internet.userName();
             let firstname = faker.name.firstName();
             let lastname = faker.name.lastName();
@@ -37,11 +44,47 @@ export class SeedDatabase {
         }
 
         Promise.all(promises).then((createdUsers) => {
-            for (let j = 0; j < createdUsers.length; j++) {
-                console.log(createdUsers[j]);
+            console.log('Kullanıcılar Eklendi.')
+            users = createdUsers;
+            let promises = [];
+            for (let i = 0; i < USERCOUNT; i++) {
+                for (let j = i + 1; j < USERCOUNT; j++) {
+                    let sender = users[i]._id;
+                    let receiver = users[j]._id;
+                    let requestMessage = faker.lorem.sentence(5, 50);
+                    promises.push(this._friendshipService.sendFriendshipRequest(new FriendshipRequestCreateModel(
+                        sender,
+                        receiver,
+                        requestMessage
+                    )));
+                }
             }
+
+            Promise.all(promises).then((sendedFriendshipRequests) => {
+                console.log('Arkadaşlık istekleri eklendi.');
+                promises = [];
+                let iteration = 0;
+                for (let i = 0; i < USERCOUNT; i++) {
+                    for (let j = i + 1; j < USERCOUNT; j++) {
+                        let option = Math.floor(Math.random() * 3) + 1;
+                        switch (option) {
+                            case 1:
+                                promises.push(this._friendshipService.acceptFriendshipRequest(sendedFriendshipRequests[iteration]._id, sendedFriendshipRequests[iteration].receiver._id.toString()));
+                                break;
+                            case 2:
+                                promises.push(this._friendshipService.rejectFriendshipRequest(sendedFriendshipRequests[iteration]._id, sendedFriendshipRequests[iteration].receiver._id.toString()));
+                                break;
+                            default:
+                                //istek beklemede kalacak.
+                                break;
+                        }
+                        iteration++;
+                    }
+                }
+
+            });
         }).catch((error: Error) => {
-            console.log('Kullanici olustururken hata');
+            console.log(error);
         });
     }
 

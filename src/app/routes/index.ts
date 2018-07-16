@@ -1,3 +1,4 @@
+import { LocalNotificationRoutes } from './LocalNotificationRoutes';
 import { MessageRoutes } from './MessageRoutes';
 import { UserRoutes } from './UserRoutes';
 import { FriendShipRoutes } from './FriendShipRoutes';
@@ -9,5 +10,6 @@ export class RouteBinder {
         UserRoutes.configureRoutes(app, container);
         MessageRoutes.configureRoutes(app, container);
         FriendShipRoutes.configureRoutes(app, container);
+        LocalNotificationRoutes.configureRoutes(app, container);
     }
 }

@@ -9,22 +9,26 @@ class UserSchema {
 
     static get schema() {
         var schema = new Schema({
-            name: {
-                type: String,
-                required: true,
-                minlength: 2,
-                maxLength: 20
-            },
             email: {
                 type: String,
                 required: true,
                 unique: true,
-                match: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            },
+            username: {
+                type: String,
+                required: true,
+            },
+            firstname: {
+                type: String,
+                required: true,
+            },
+            lastname: {
+                type: String,
+                required: true
             },
             password: {
                 type: String,
                 required: true,
-                match: /^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[\d])(?=.*?[\W]).{8,35}$/
             },
             about: {
                 type: String,
@@ -34,20 +38,33 @@ class UserSchema {
                 type: String,
                 default: ""
             },
-            SendedFriendShips: [{
-                type: Schema.Types.ObjectId,
-                ref: 'FriendShip'
-            }],
-            AcceptedFriendShips: [{
-                type: Schema.Types.ObjectId,
-                ref: 'FriendShip'
-            }],
             createdAt: {
                 type: Date,
                 default: Date.now()
             }
         });
-        schema.index({ name: 'text' });
+
+        // schema.virtual('friendshipsByRequested', {
+        //     ref: 'FriendShip',
+        //     localField: '_id',
+        //     foreignField: 'sender'
+        // });
+
+        // schema.virtual('friendshipsByAccepted', {
+        //     ref: 'FriendShip',
+        //     localField: '_id',
+        //     foreignField: 'acceptor'
+        // });
+
+        // schema.virtual('friends').get(function () {
+        //     let friendsA = this.friendshipsByRequested.map((r) => {
+        //         return 
+        //     })
+
+        //     let friendsB = this.friendshipsByAccepted.map((r) => {
+
+        //     })
+        // });
         return schema;
     }
 
@@ -58,3 +75,12 @@ export = schema;
 
 //TODO
 //1-    Emailde Unique saglanmiyor. düzelt.
+
+//Kenarda Dursun
+
+// projectSchema.virtual('owner', {
+//     ref: 'People',
+//     localField: '_id',
+//     foreignField: 'owns',
+//     justOne: true // Only return one owner
+//   });

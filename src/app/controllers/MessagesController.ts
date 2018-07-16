@@ -1,8 +1,13 @@
-import { IMessageService, AuthenticationService } from './../../business';
+import * as express from 'express';
+import { IMessageService, AuthenticationService } from '../../business';
 import { injectable, inject } from 'inversify';
-import { IOCTYPES } from './../../ioc/ioc-types.enum';
+import { IOCTYPES } from '../../ioc/ioc-types.enum';
+import { validate } from 'class-validator';
+import { AppError } from '../../errors/AppError';
+import { MessageCreateModel, IChatMessageViewModel } from '../../models';
 import { onlineUsers } from '../../socket/online-users';
 import 'reflect-metadata';
+import { ErrorHandler } from '../../errors/ErrorHandler';
 
 
 @injectable()
@@ -12,87 +17,75 @@ export class MessagesController {
         @inject(IOCTYPES.MESSAGE_SERVICE) private _messageService: IMessageService,
     ) { }
 
-    add(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const message = {
-                        from: isAuth._id,
-                        to: req.body.to,
-                        content: req.body.content
-                    }
-                    this._messageService.sendMessage(message).then((data) => {
-                        var io = req.app.get('socketio');
-                        try {
-                            onlineUsers[data.to._id].socketIds.forEach(socketId => {
-                                io.to(socketId).emit('receiveMessage', data);
-                            });
-                        } catch (error) {
-                            console.log('mesaj realtime gitmedi, kullanıcı yok yada online degil');
-                            console.log(error);
-                        }
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
+    public add(req: express.Request, res: express.Response, next: express.NextFunction) {
+        let message: MessageCreateModel;
+        AuthenticationService.decodeToken(req).then((decodedToken) => {
+            message = new MessageCreateModel(
+                decodedToken._id,
+                req.body.to,
+                req.body.content
+            )
+            //validation eklenecek
+            return validate(message);
+        }).then((errors) => {
+            if (errors.length > 0) {
+                throw new AppError(
+                    'Validation Error',
+                    JSON.stringify(errors),
+                    400
+                )
+            }
+            return this._messageService.add(message);
+        }).then((data: IChatMessageViewModel) => {
+            var io = req.app.get('socketio');
+            if (onlineUsers.hasOwnProperty(data.to)) {
+                onlineUsers[data.to].socketIds.forEach(socketId => {
+                    io.to(socketId).emit('receiveMessage', data);
+                });
+            }
+            return res.status(201).json({
+                success: true,
+                data: data
             });
-        }
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'add', 'MessagesController');
+        });
     }
 
-    makeAllReceivedMessagesReadedFromMyFriend(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const friendId = req.params.friendId;
-                    this._messageService.makeAllReceivedMessagesReadedFromMyFriend(isAuth._id, friendId).then((data) => {
-                        var io = req.app.get('socketio');
-                        try {
-                            onlineUsers[friendId].socketIds.forEach(socketId => {
-                                io.to(socketId).emit('messagesReaded', isAuth._id);
-                            });
-                        } catch (error) {
-                            console.log('mesaj realtime gitmedi, kullanıcı yok yada online degil');
-                            console.log(error);
-                        }
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
+    public listChat(req: express.Request, res: express.Response, next: express.NextFunction) {
+        AuthenticationService.decodeToken(req).then((decodedToken) => {
+            const myId = decodedToken._id;
+            const friendId = req.params.friendId;
+            return this._messageService.listChat(myId, friendId);
+        }).then((data: IChatMessageViewModel[]) => {
+            return res.status(200).json({
+                success: true,
+                data: data
             });
-        }
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'listChat', 'MessagesController');
+        });
+    }
+
+    public makeChatMessagesReaded(req: express.Request, res: express.Response, next: express.NextFunction) {
+        let myId: string;
+        let friendId: string;
+        AuthenticationService.decodeToken(req).then((decodedToken) => {
+            myId = decodedToken._id;
+            friendId = req.params.friendId;
+            return this._messageService.makeChatMessagesReaded(myId, friendId);
+        }).then(() => {
+            var io = req.app.get('socketio');
+            if (onlineUsers.hasOwnProperty(friendId)) {
+                onlineUsers[friendId].socketIds.forEach(socketId => {
+                    io.to(socketId).emit('messagesReaded', myId);
+                });
+            }
+            return res.status(200).json({
+                success: true,
+            });
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'makeChatMessagesReaded', 'MessagesController');
+        });
     }
 }

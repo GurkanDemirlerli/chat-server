@@ -9,7 +9,7 @@ import { IRepositoryBase } from './interfaces/IRepositoryBase';
 export abstract class RepositoryBase<T extends mongoose.Document> implements IRepositoryBase<T> {
     private _model: mongoose.Model<mongoose.Document>;
 
-    constructor( @unmanaged() schemaModel: mongoose.Model<mongoose.Document>) {
+    constructor(@unmanaged() schemaModel: mongoose.Model<mongoose.Document>) {
         this._model = schemaModel;
     }
 
@@ -29,7 +29,8 @@ export abstract class RepositoryBase<T extends mongoose.Document> implements IRe
                     reject(err);
                 }
                 else {
-                    resolve(<T>res);
+                    // resolve(<T>res.toObject());
+                    resolve(<T>res.toObject());
                 }
             });
         });

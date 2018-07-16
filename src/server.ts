@@ -10,17 +10,18 @@ import chalk from 'chalk';
 
 import { GLOBAL } from './global';
 import { IOC } from './ioc';
-import { RouteBinder } from './app/routes/index';
+import { RouteBinder } from './app/routes';
 
 import * as socketIo from 'socket.io';
 import { Socket, Server as socketIoServer } from 'socket.io';
 import { SocketHandler } from './socket/socket-handler';
+// import { AutoMapperBootstraper } from './mapping/AutoMapperBootstraper';
 
 
 let app: express.Application = express();
 let server: httpServer = createServer(app);
 //ASAGIDAKI SATIR CIRCULAR DEPENDENCY OLUSTURUYOR .......DIKKAT........
-export let io: socketIoServer = socketIo(server,{'pingInterval': 2000, 'pingTimeout': 5000});
+export let io: socketIoServer = socketIo(server, { 'pingInterval': 2000, 'pingTimeout': 5000 });
 
 
 
@@ -60,7 +61,9 @@ RouteBinder.configureRoutes(app, container);
 ========================================================================== */
 
 server.listen(port, (err: any) => {
+    // const AMB: AutoMapperBootstraper = new AutoMapperBootstraper();
+    // AMB.init();
     if (err)
         return console.log(err);
-    log(success(`ts-node listening on port ${GLOBAL.PORT} in ${environment} mode`));
+    log(success(`Chat-App server listening on port ${GLOBAL.PORT} in ${environment} mode`));
 });

@@ -1,12 +1,11 @@
 import { IRepositoryBase } from './IRepositoryBase';
-import { IFriendRequest } from './../../../models';
+import { IFriendRequest } from '../../../models';
 
 export interface IFriendRequestRepository extends IRepositoryBase<IFriendRequest> {
-    acceptRequest(friendRequestId: string): Promise<any>;
-    rejectRequest(friendRequestId: string): Promise<any>;
-    cancelRequest(friendRequestId: string): Promise<any>;
+    updateStatus(friendshipRequestId: string, status: number): Promise<IFriendRequest>;
     gidenArkadaslikIstegiVarmi(myId, otherId): Promise<String>;
     gelenArkadaslikIstegiVarmi(myId, otherId): Promise<String>;
     getReceivedFriendRequestsCount(userId: string): Promise<number> ;
-    getAllFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]>
+    // getSendedFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]>;
+    // getReceivedFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]>;
 }

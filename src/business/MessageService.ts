@@ -1,9 +1,9 @@
-import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../ioc/ioc-types.enum';
-import { IMessageRepository, IUserRepository, IFriendShipRepository } from './../dataAccess/repository';
+import { IMessageRepository, IUserRepository, IFriendShipRepository } from '../dataAccess/repository';
 import { IMessageService } from './interfaces';
-import { IMessage } from '../models';
+import { IMessage, IChatMessageViewModel, MessageCreateModel } from '../models';
+import 'reflect-metadata';
 
 @injectable()
 export class MessageService implements IMessageService {
@@ -14,47 +14,27 @@ export class MessageService implements IMessageService {
         @inject(IOCTYPES.FRIENDSHIP_REPOSITORY) private _friendShipRepository: IFriendShipRepository,
     ) { }
 
-    add(message) {
-        let p = new Promise<any>((resolve, reject) => {
-            this._messageRepository.create(message).then((messageRes: IMessage) => {
-                this._userRepository.findByIdAndPush(messageRes.from, { messages: messageRes._id }).then((userRes) => {
-                    //make something optional
-                }).catch((error) => {
-                    //delete created messages
-                    reject(error.message);
+    add(item: MessageCreateModel): Promise<IChatMessageViewModel> {
+        return new Promise<IChatMessageViewModel>((resolve, reject) => {
+            //arkadaslik kontrolü yap.
+            this._messageRepository.create(item).then((res: IMessage) => {
+                delete res.__v;
+                resolve(<IChatMessageViewModel>res);
+            }).catch((error: Error) => {
+                reject(error);
+            });
+        });
+    }
+
+    listChat(myId: string, friendId: string): Promise<IChatMessageViewModel[]> {
+        return new Promise<IChatMessageViewModel[]>((resolve, reject) => {
+            this._messageRepository.findMessagesBetweenTwoUsers(myId, friendId).then((res: IMessage[]) => {
+                res = res.map(r => {
+                    delete (r['_doc'] as IMessage).__v;
+                    return r['_doc'];
                 });
-                resolve(messageRes);
-            }).catch((error) => {
-                reject(error.message);
-            });
-        });
-        return p;
-    }
-
-    list() {
-        let p = new Promise<any>((resolve, reject) => {
-            this._messageRepository.list().then((res) => {
-                resolve(res);
-            }).catch((error) => {
-                reject(error.message);
-            });
-        });
-        return p;
-    }
-
-    findMessagesBetweenMyFriend(myId: string, friendId: string): Promise<IMessage[]> {
-        return new Promise<IMessage[]>((resolve, reject) => {
-            this._friendShipRepository.arkadaslikKontrol(myId, friendId).then((arkadaslarMı) => {
-                if (arkadaslarMı) {
-                    this._messageRepository.findMessagesBetweenTwoUsers(myId, friendId).then((messages: IMessage[]) => {
-                        resolve(messages);
-                    }).catch((error) => {
-                        reject(error);
-                    });
-                } else {
-                    reject('Error : Arkadas Degiller');
-                }
-            }).catch((error) => {
+                resolve(<IChatMessageViewModel[]>res);
+            }).catch((error: Error) => {
                 reject(error);
             })
         });
@@ -72,31 +52,17 @@ export class MessageService implements IMessageService {
                 } else {
                     reject('Error: Mesaj eklenmedi.');
                 }
-            }).catch((error) => {
+            }).catch((error: Error) => {
                 reject(error);
             })
         });
     }
 
-    makeAllReceivedMessagesReadedFromMyFriend(myId: string, friendId: string): Promise<Boolean> {
-        return new Promise<any>((resolve, reject) => {
-            this._messageRepository.makeAllReceivedMessagesReadedFromUser(myId, friendId).then((res) => {
-                if (res) {
-                    resolve(true);
-                } else {
-                    reject(false);
-                }
-            }).catch((error) => {
-                reject(error);
-            });
-        });
-    }
-
-    findUnreadedMessagesCount(myId: string, friendId: string): Promise<number> {
-        return new Promise<number>((resolve, reject) => {
-            this._messageRepository.findUnreadedMessagesCount(myId, friendId).then((unReadedMessagesCount) => {
-                resolve(unReadedMessagesCount);
-            }).catch((error) => {
+    makeChatMessagesReaded(myId: string, friendId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this._messageRepository.makeChatMessagesReaded(myId, friendId).then(() => {
+                resolve();
+            }).catch((error: Error) => {
                 reject(error);
             });
         });

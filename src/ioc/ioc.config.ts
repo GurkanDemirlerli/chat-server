@@ -8,7 +8,8 @@ import {
     MessagesController,
     UsersController,
     FriendShipController,
-} from './../app/controllers';
+    LocalNotificationsController,
+} from '../app/controllers';
 //#endregion
 
 //#region REPOSITORY IMPORTS
@@ -18,14 +19,14 @@ import {
     FriendRequestRepository,
     UserRepository,
     LocalNotificationRepository,
-} from './../dataAccess/repository';
+} from '../dataAccess/repository';
 import {
     IMessageRepository,
     IUserRepository,
     IFriendShipRepository,
     IFriendRequestRepository,
     ILocalNotificationRepository,
-} from './../dataAccess/repository';
+} from '../dataAccess/repository';
 //#endregion
 
 //#region  SERVICE IMPORTS
@@ -34,15 +35,17 @@ import {
     UserService,
     NotificationService,
     FriendShipService,
+    LocalNotificationService
 
-} from './../business';
+} from '../business';
 import {
     IMessageService,
     IUserService,
     INotificationService,
-    IFriendShipService
+    IFriendShipService,
+    ILocalNotificationService
 
-} from './../business';
+} from '../business';
 //#endregion
 //#endregion
 
@@ -68,6 +71,12 @@ export module IOC {
         container
             .bind<FriendShipController>(FriendShipController)
             .toSelf()
+
+        container
+            .bind<LocalNotificationsController>(LocalNotificationsController)
+            .toSelf()
+
+
 
         //#endregion
 
@@ -112,6 +121,10 @@ export module IOC {
         container
             .bind<IFriendShipService>(IOCTYPES.FRIEND_SHIP_SERVICE)
             .to(FriendShipService)
+
+        container
+            .bind<ILocalNotificationService>(IOCTYPES.LOCAL_NOTIFICATION_SERVICE)
+            .to(LocalNotificationService)
 
 
 

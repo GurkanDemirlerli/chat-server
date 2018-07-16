@@ -2,8 +2,10 @@ import mongoose = require("mongoose");
 import { IFriendShip } from '../..';
 
 export interface IUser extends mongoose.Document {
-    name: string;
     email: string;
+    username: string;
+    firstname: string;
+    lastname: string;
     about: string;
     password: string;
     notificationId?: string;

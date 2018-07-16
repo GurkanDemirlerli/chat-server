@@ -1,11 +1,20 @@
-import { IUserService, IMessageService } from './../../business';
+import * as express from 'express';
+import { IUserService, IMessageService, AuthenticationService } from '../../business';
 import { injectable, inject } from 'inversify';
-import { IOCTYPES } from './../../ioc/ioc-types.enum';
-import { ISignupModel, SignupModel, ILoginModel, LoginModel } from './../../models';
-import 'reflect-metadata';
+import { IOCTYPES } from '../../ioc/ioc-types.enum';
+import {
+    ILoginResult,
+    SignupInput,
+    LoginInput,
+    IProfileCard,
+    IUserSearchResult
+} from '../../models';
 import { validate } from 'class-validator';
-import { AuthenticationService } from '../../business';
 import { onlineUsers } from '../../socket/online-users';
+import { AppError } from '../../errors/AppError';
+import { ErrorHandler } from '../../errors/ErrorHandler';
+import 'reflect-metadata';
+
 
 @injectable()
 export class UsersController {
@@ -15,196 +24,102 @@ export class UsersController {
         @inject(IOCTYPES.MESSAGE_SERVICE) private _messageService: IMessageService
     ) { }
 
-    signup(req, res, next) {
-        let signupModel: SignupModel = new SignupModel(<ISignupModel>req.body)
-        validate(signupModel).then((errors) => {
-            //#region TEMP Compare
-            // if (signupModel.password !== signupModel.passwordVerify) {
-            //     res.json({
-            //         'success': false,
-            //         'error': 'Password and Verify not match'
-            //     });
-            // }
-            // //#endregion
+    signup(req: express.Request, res: express.Response, next: express.NextFunction) {
+        let signupInput: SignupInput = new SignupInput(
+            req.body.email,
+            req.body.username,
+            req.body.firstname,
+            req.body.lastname,
+            req.body.password
+        );
+        validate(signupInput).then((errors) => {
             if (errors.length > 0) {
-                console.log('11111111111');
-                return res.json({
-                    'success': false,
-                    'data': errors
-                });
-            } else {
-                this._userService.signup(signupModel).then((data) => {
-                    console.log('44444444444');
-
-                    return res.json({
-                        'success': true,
-                        'data': data
-                    });
-                }).catch((error) => {
-                    console.log('555555555555');
-
-                    return res.json({
-                        'success': false,
-                        'error': error
-                    });
-                });
+                throw new AppError(
+                    'Validation Error',
+                    JSON.stringify(errors),
+                    400
+                )
             }
-        }).catch((error) => {
-            console.log('333333333333');
-
-            return res.json({
-                'success': false,
-                'error': 'Unknown error'
+            return this._userService.signup(signupInput);
+        }).then(() => {
+            return res.status(201).json({
+                success: true,
             });
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'signup', 'UsersController');
         });
-
     }
 
-    friendShipRequest(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const model = {
-                        sender: isAuth._id,
-                        receiver: req.body.receiver,
-                        requestMessage: req.body.requestMessage
-                    }
-                    this._userService.sendFriendShipRequest(model).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    acceptFriendShipRequest(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const friendRequestId = req.body.friendRequestId;
-                    const acceptorId = isAuth._id;
-                    this._userService.acceptFriendShipRequest(friendRequestId, acceptorId).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    listMyFriends(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const myId = isAuth._id;
-                    this._userService.listMyFriends(myId).then((data) => {
-                        let friends = [];
-                        let iterator = 0;
-                        if (data.length < 1) {
-                            return res.json({
-                                'success': true,
-                                'data': []
-                            });
-                        }
-                        data.forEach(friend => {
-                            if (onlineUsers[friend._id]) {
-                                friend.status = 'online';
-                            } else {
-                                friend.status = 'offline';
-                            }
-                            this._messageService.findUnreadedMessagesCount(myId, friend._id).then((unReadedMessagesCount) => {
-                                friends.push({
-                                    _id: friend._id,
-                                    email: friend.email,
-                                    name: friend.name,
-                                    about: friend.about,
-                                    status: friend.status,
-                                    unReadedMessagesCount: unReadedMessagesCount
-                                });
-                                iterator++;
-                                if (iterator == data.length) {
-                                    return res.json({
-                                        'success': true,
-                                        'data': friends
-                                    });
-                                }
-                            });
-                        });
-
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    login(req, res, next) {
-        let loginModel: LoginModel = new LoginModel(<ILoginModel>req.body)
-        this._userService.login(loginModel).then((data) => {
-            // var io = req.app.get('socketio');
-            // io.emit('hi', onlineUsers);
-            return res.json({
+    login(req: express.Request, res: express.Response, next: express.NextFunction) {
+        let loginInput: LoginInput = new LoginInput(
+            req.body.email,
+            req.body.password
+        );
+        validate(loginInput).then((errors) => {
+            if (errors.length > 0) {
+                let error = new Error(JSON.stringify(errors));
+                error.name = 'Validation Error';
+                throw error;
+            }
+            return this._userService.login(loginInput);
+        }).then((data: ILoginResult) => {
+            return res.status(200).json({
                 'success': true,
                 'data': data
             });
         }).catch((error) => {
-            return res.json({
-                'success': false,
-                'error': error
-            });
+            return ErrorHandler.handleErrorResponses(error, res, 'login', 'UsersController');
         });
     }
 
-    changeNotificationId(req, res, next) {
+
+
+    getMyProfileCard(req: express.Request, res: express.Response, next: express.NextFunction) {
+        AuthenticationService.decodeToken(req).then((decodedToken) => {
+            return this._userService.getMyProfileCard(decodedToken._id);
+        }).then((data: IProfileCard) => {
+            return res.json({
+                'success': true,
+                'data': data
+            });
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'getMyProfileCard', 'UsersController');
+        });
+    }
+
+    controlUniquenessForEmail(req: express.Request, res: express.Response, next: express.NextFunction) {
+        const email = req.params.email;
+        this._userService.controlUniquenessForEmail(email).then((data) => {
+            return res.json({
+                'success': true,
+                'data': data
+            });
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'controlUniquenessForEmail', 'UsersController');
+        });
+    }
+
+    // controlUniquenessForUsername Ekle
+
+    searchUsersByUsername(req: express.Request, res: express.Response, next: express.NextFunction) {
+        AuthenticationService.decodeToken(req).then((decodedToken) => {
+            const username = req.query.username;
+            const limit = req.query.limit;
+            const skip = req.query.skip;
+            //TO DO model yap validation yap
+            return this._userService.searchUsers(username, limit, skip, decodedToken._id);
+        }).then((data: IUserSearchResult[]) => {
+            return res.status(200).json({
+                'success': true,
+                'data': data
+            });
+        }).catch((error: Error) => {
+            return ErrorHandler.handleErrorResponses(error, res, 'searchUsersByUsername', 'UsersController');
+        });
+    }
+
+    //ionic icin gerekli
+    changeNotificationId(req: express.Request, res: express.Response, next: express.NextFunction) {
         this._userService.changeNotificationId(req.body.userId, req.body.notificationId).then((data) => {
             return res.json({
                 'success': true,
@@ -218,276 +133,12 @@ export class UsersController {
         });
     }
 
-    deleteNotificationId(req, res, next) {
+    //ionic icin gerekli
+    deleteNotificationId(req: express.Request, res: express.Response, next: express.NextFunction) {
         this._userService.deleteNotificationId(req.body.userId).then((data) => {
             return res.json({
                 'success': true,
                 'data': data
-            });
-        }).catch((error) => {
-            return res.json({
-                'success': false,
-                'error': error
-            });
-        });
-    }
-
-    findMyFriend(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const myId = isAuth._id;
-                    const friendId = req.params.friendId;
-                    this._userService.findMyFriend(myId, friendId).then((data) => {
-                        let status;
-                        if (onlineUsers[data._id]) {
-                            status = 'online';
-                        } else {
-                            status = 'offline';
-                        }
-                        const friend = {
-                            _id: data._id,
-                            email: data.email,
-                            name: data.name,
-                            about: data.about,
-                            status: status
-                        }
-                        return res.json({
-                            'success': true,
-                            'data': friend
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    getMessagesBetweenMyFriend(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const myId = isAuth._id;
-                    const friendId = req.params.friendId;
-                    this._messageService.findMessagesBetweenMyFriend(myId, friendId).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    getMyProfileCard(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const myId = isAuth._id;
-                    this._userService.getMyProfileCard(myId).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            });
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    searchUsersByName(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    const name = req.query.name;
-                    this._userService.searchUsers(name, 20, 0, isAuth._id).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            }).catch((error) => {
-                return res.json({
-                    'success': false,
-                    'error': error
-                });
-            });
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-
-    }
-
-    getMyNotifications(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    this._userService.getMyNotifications(isAuth._id).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            }).catch((error) => {
-                return res.json({
-                    'success': false,
-                    'error': error
-                });
-            });
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    getUnReadedNotificationsCount(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    this._userService.getUnReadedNotificationsCount(isAuth._id).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            }).catch((error) => {
-                return res.json({
-                    'success': false,
-                    'error': error
-                });
-            });
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-    makeAllNotificationsReaded(req, res, next) {
-        try {
-            AuthenticationService.checkAuthentication(req).then((isAuth) => {
-                if (isAuth) {
-                    this._userService.makeAllNotificationsReaded(isAuth._id).then((data) => {
-                        return res.json({
-                            'success': true,
-                            'data': data
-                        });
-                    }).catch((error) => {
-                        return res.json({
-                            'success': false,
-                            'error': error
-                        });
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'error': 'UnAuthorized'
-                    });
-                }
-            }).catch((error) => {
-                return res.json({
-                    'success': false,
-                    'error': error
-                });
-            });
-        } catch (error) {
-            return res.json({
-                'success': false,
-                'error': 'Unhandled error'
-            });
-        }
-    }
-
-
-    controlUniquenessForEmail(req, res, next) {
-        const email = req.params.email;
-        this._userService.controlUniquenessForEmail(email).then((data) => {
-            return res.json({
-                'success': true
             });
         }).catch((error) => {
             return res.json({

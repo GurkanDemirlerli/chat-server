@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
-import FriendRequestSchema = require("./../schemas/friendrequest.schema");
+import FriendRequestSchema = require("../schemas/friendrequest.schema");
 import { IFriendRequestRepository } from './interfaces/IFriendRequestRepository';
 import { RepositoryBase } from './RepositoryBase';
-import { IFriendRequest } from './../../models';
+import { IFriendRequest } from '../../models';
 import 'reflect-metadata';
 
 @injectable()
@@ -11,10 +11,10 @@ export class FriendRequestRepository extends RepositoryBase<IFriendRequest> impl
         super(FriendRequestSchema)
     }
 
-    acceptRequest(friendRequestId: string): Promise<any> {
-        let p = new Promise<IFriendRequest>((resolve, reject) => {
+    updateStatus(friendshipRequestId: string, status: number): Promise<IFriendRequest> {
+        return new Promise((resolve, reject) => {
             FriendRequestSchema
-                .findByIdAndUpdate(friendRequestId, { status: 1 })
+                .findByIdAndUpdate(friendshipRequestId, { status: status })
                 .exec((err, res) => {
                     if (err) {
                         reject(err);
@@ -23,37 +23,6 @@ export class FriendRequestRepository extends RepositoryBase<IFriendRequest> impl
                     }
                 });
         });
-        return p;
-    }
-
-    rejectRequest(friendRequestId: string): Promise<any> {
-        let p = new Promise<IFriendRequest>((resolve, reject) => {
-            FriendRequestSchema
-                .findByIdAndUpdate(friendRequestId, { status: 2 })
-                .exec((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                });
-        });
-        return p;
-    }
-
-    cancelRequest(friendRequestId: string): Promise<any> {
-        let p = new Promise<IFriendRequest>((resolve, reject) => {
-            FriendRequestSchema
-                .findByIdAndUpdate(friendRequestId, { status: 3 })
-                .exec((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                });
-        });
-        return p;
     }
 
     gidenArkadaslikIstegiVarmi(myId, otherId): Promise<String> {
@@ -131,8 +100,8 @@ export class FriendRequestRepository extends RepositoryBase<IFriendRequest> impl
                     status: 0
                 }
                 ])
-                .populate('receiver', '_id name email')
-                .populate('sender', '_id name email')
+                .populate('receiver', '_id firstname lastname username')
+                .populate('sender', '_id firstname lastname username')
                 .exec((err, res) => {
                     if (err) {
                         reject(err);
@@ -142,5 +111,30 @@ export class FriendRequestRepository extends RepositoryBase<IFriendRequest> impl
                 });
         });
     }
+
+    // getSendedFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]> {
+    //     return new Promise<IFriendRequest[]>((resolve, reject) => {
+    //         FriendRequestSchema
+    //             .find({})
+    //                 receiver: userId,
+    //                 status: 0
+    //             }, {
+    //                 sender: userId,
+    //                 status: 0
+    //             }
+    //             .populate('receiver', '_id firstname lastname username')
+    //             .populate('sender', '_id firstname lastname username')
+    //             .exec((err, res) => {
+    //                 if (err) {
+    //                     reject(err);
+    //                 } else {
+    //                     resolve(res);
+    //                 }
+    //             });
+    //     });
+    // }
+    // getReceivedFriendShipRequestsForUser(userId: string): Promise<IFriendRequest[]> {
+    //     throw new Error("Method not implemented.");
+    // }
 
 }

@@ -1,4 +1,4 @@
-import { MessageRepository } from './../dataAccess/repository';
+import { MessageRepository } from '../dataAccess/repository';
 
 
 

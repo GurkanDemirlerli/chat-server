@@ -1,25 +1,23 @@
 import {
-    ISignupModel,
-    ILoginModel,
+    SignupInput,
     IUser,
-    IFriendRequest,
-    IFriendShip,
     IUserSearchResultModel,
-    ILocalNotification
-} from './../models';
+    ILocalNotification,
+    LoginInput,
+    ILoginResult,
+    IProfileCard
+} from '../models';
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../ioc/ioc-types.enum';
-import { IUserService } from 'src/business';
+import { IUserService } from '.';
 import {
     IUserRepository,
     IFriendRequestRepository,
     IFriendShipRepository,
     ILocalNotificationRepository,
-    IMessageRepository
-} from './../dataAccess/repository';
+} from '../dataAccess/repository';
 import * as jwt from 'jsonwebtoken';
 import 'reflect-metadata';
-import { LocalNotificationTypes } from '../util/local-notification-types/local-notification-types.enum';
 
 @injectable()
 export class UserService implements IUserService {
@@ -29,45 +27,54 @@ export class UserService implements IUserService {
         @inject(IOCTYPES.FRIENDREQUEST_REPOSITORY) private _friendRequestRepository: IFriendRequestRepository,
         @inject(IOCTYPES.FRIENDSHIP_REPOSITORY) private _friendShipRepository: IFriendShipRepository,
         @inject(IOCTYPES.LOCALNOTIFICATION_REPOSITORY) private _localNotificationRepository: ILocalNotificationRepository,
-        @inject(IOCTYPES.MESSAGE_REPOSITORY) private _messageRepository: IMessageRepository,
     ) { }
 
-    signup(item: ISignupModel): Promise<IUser> {
-        let p = new Promise<IUser>((resolve, reject) => {
-            this._userRepository.create(item).then((res: IUser) => {
-                resolve(<IUser>res);
-            }).catch((error) => {
-                reject(error.message);
+    signup(item: SignupInput): Promise<IProfileCard> {
+        return new Promise<IProfileCard>((resolve, reject) => {
+            this._userRepository.create(item).then((res) => {
+                delete res.password;
+                delete res.notificationId;
+                delete res.SendedFriendShips;
+                delete res.AcceptedFriendShips;
+                delete res.__v;
+                resolve(<IProfileCard>res);
+            }).catch((error: Error) => {
+                reject(error);
             });
         });
-        return p;
     }
 
-    login(item: ILoginModel): Promise<any> {
-        let p = new Promise<any>((resolve, reject) => {
-            this._userRepository.findOne({ 'email': item.email, 'password': item.password }, {}, {}).then((res: IUser) => {
-                if (res) {
-                    var token = jwt.sign({ _id: res._id, email: res.email }, 'MySecret', { expiresIn: 86400000 });
-                    var email = res.email;
-                    var id = res._id;
-                    var result = {
-                        token: token,
-                        email: email,
-                        id: id
-                    }
-                    resolve(result);
-                } else {
+    login(item: LoginInput): Promise<ILoginResult> {
+        return new Promise<ILoginResult>((resolve, reject) => {
+            this._userRepository.findOne({
+                'email': item.getEmail,
+                'password': item.getPassword
+            }, {}, {}).then((res: IUser) => {
+                if (!res) {
                     reject('Wrong username or password');
                 }
+                let token = jwt.sign({
+                    _id: res._id,
+                    username: res.username,
+                    email: res.email,
+                    firstname: res.username,
+                    lastname: res.lastname,
+                }, 'MySecret', { expiresIn: 86400000 });
+
+                let loginResult: ILoginResult = <ILoginResult>{
+                    id: res._id,
+                    email: res.email,
+                    token: token,
+                };
+                resolve(loginResult);
             }).catch((error) => {
                 reject(error)
             });
         });
-        return p;
     }
 
     changeNotificationId(userId, notifyId): Promise<any> {
-        let p = new Promise<any>((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             this._userRepository.changeNotificationId(userId, notifyId).then((res: IUser) => {
                 if (res) {
                     console.log("User Service Resolve.", res.notificationId)
@@ -79,164 +86,16 @@ export class UserService implements IUserService {
                 }
             })
         });
-        return p;
     }
 
     deleteNotificationId(userId): Promise<any> {
-        let p = new Promise<any>((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             this._userRepository.deleteNotificationId(userId).then((res: IUser) => {
                 if (res) {
                     resolve('SUCCESS');
                 } else {
                     reject('ERROR');
                 }
-            });
-        });
-        return p;
-    }
-
-    sendFriendShipRequest(item: IFriendRequest): Promise<IFriendRequest> {
-        return new Promise<IFriendRequest>((resolve, reject) => {
-            this._friendRequestRepository.create(item).then((res) => {
-                if (res) {
-                    resolve(res);
-                } else {
-                    reject('Error : sonuc bulunamadi.');
-                }
-            }).catch((error) => {
-                reject(error);
-            });
-        });
-    }
-
-    acceptFriendShipRequest(friendRequestId: string, acceptorId: string): Promise<any[]> {
-        return new Promise<any[]>((resolve, reject) => {
-            this._friendRequestRepository.findById(friendRequestId).then((res) => {
-
-                if (res.receiver.toString() == acceptorId) {
-                    this._friendRequestRepository.acceptRequest(friendRequestId).then((res) => {
-                        if (res) {
-                            this.beFriends({ sender: res.sender, acceptor: res.receiver }).then((res) => {
-                                if (res) {
-                                    let notificationModel: ILocalNotification = <ILocalNotification>{
-                                        contentType: LocalNotificationTypes.FRIEND_REQUEST_ACCEPTED,
-                                        from: res.acceptor,
-                                        to: res.sender
-                                    };
-                                    this._localNotificationRepository.create(notificationModel).then((notification) => {
-                                        resolve([res, notification]);
-                                    }).catch((error) => {
-                                        resolve([res, error]);//Daha sonra düzelt
-                                        console.log('Error: Bildirim Eklenmedi');
-                                    });
-                                } else {
-                                    reject('Error : sonuc bulunamadi.');
-                                }
-                            }).catch((error => {
-                                //Geri Al
-                                reject(error);
-                            }));
-                        } else {
-                            reject('Error : sonuc bulunamadi.');
-                        }
-                    }).catch((error) => {
-                        reject(error);
-                    });
-                } else {
-                    console.log('Error: UnAuthorized');
-                    reject('Error: UnAuthorized');
-                }
-            }).catch((error) => {
-                // console.log(error);
-                console.log('REJECT');
-                reject(error);
-            });
-        });
-    }
-
-    rejectFriendShipRequest(friendRequestId: string, rejectorId: string): Promise<any[]> {
-        return new Promise<any[]>((resolve, reject) => {
-            this._friendRequestRepository.findById(friendRequestId).then((res) => {
-
-                if (res.receiver.toString() == rejectorId) {
-                    this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
-                        if (res) {
-                            let notificationModel: ILocalNotification = <ILocalNotification>{
-                                contentType: LocalNotificationTypes.FRIEND_REQUEST_REJECTED,
-                                from: res.receiver,
-                                to: res.sender
-                            };
-                            this._localNotificationRepository.create(notificationModel).then((notification) => {
-                                resolve([res, notification]);
-                            }).catch((error) => {
-                                resolve([res, error]);//Daha sonra düzelt
-                                console.log('Error: Bildirim Eklenmedi');
-                            });
-                        } else {
-                            reject('Error : sonuc bulunamadi.');
-                        }
-                    }).catch((error) => {
-                        reject(error);
-                    });
-                } else {
-                    console.log('Error: UnAuthorized');
-                    reject('Error: UnAuthorized');
-                }
-            }).catch((error) => {
-                // console.log(error);
-                console.log('REJECT');
-                reject(error);
-            });
-
-        });
-    }
-
-    cancelSendedFriendShipRequest(friendRequestId: string, iptalEden: string): Promise<IFriendRequest> {
-        console.log(friendRequestId);
-        return new Promise<IFriendRequest>((resolve, reject) => {
-            this._friendRequestRepository.findById(friendRequestId).then((res) => {
-
-                if (res.sender.toString() == iptalEden) {
-                    this._friendRequestRepository.rejectRequest(friendRequestId).then((res) => {
-                        if (res) {
-                            resolve(res);
-                        } else {
-                            reject('Error : sonuc bulunamadi.');
-                        }
-                    }).catch((error) => {
-                        reject(error);
-                    });
-                } else {
-                    console.log('Error: UnAuthorized');
-                    reject('Error: UnAuthorized');
-                }
-            }).catch((error) => {
-                // console.log(error);
-                console.log('REJECT');
-                reject(error);
-            });
-
-        });
-    }
-
-    private beFriends(item): Promise<IFriendShip> {
-        return new Promise<IFriendShip>((resolve, reject) => {
-            this._friendShipRepository.create(item).then((res) => {
-                if (res) {
-                    this._userRepository.findByIdAndPush(<string>res.sender, { SendedFriendShips: res._id }).then((senderRes) => {
-                        this._userRepository.findByIdAndPush(<string>res.acceptor, { AcceptedFriendShips: res._id }).then((acceptorRes) => {
-                            resolve(res);
-                        }).catch((error) => {
-                            reject(error);
-                        });
-                    }).catch((error) => {
-                        reject(error);
-                    });
-                } else {
-                    reject('Error : sonuc bulunamadi.');
-                }
-            }).catch((error) => {
-                reject(error);
             });
         });
     }
@@ -270,7 +129,9 @@ export class UserService implements IUserService {
                     await res.forEach(async (userRes, index) => {
                         let user: IUserSearchResultModel = <IUserSearchResultModel>new Object();
                         user._id = userRes._id;
-                        user.name = userRes.name;
+                        user.username = userRes.username;
+                        user.firstname = userRes.firstname;
+                        user.lastname = userRes.lastname;
                         user.email = userRes.email;
                         if (user._id.toString() != myId) {
                             await this._friendShipRepository.arkadaslikKontrol(myId, userRes._id).then((arkadaslarMı) => {
@@ -329,79 +190,23 @@ export class UserService implements IUserService {
         });
     }
 
-    findMyFriend(myId, friendId): Promise<IUser> {
-        return new Promise<IUser>((resolve, reject) => {
-            this._friendShipRepository.arkadaslikKontrol(myId, friendId).then((arkadaslarMı) => {
-                if (arkadaslarMı) {
-                    this._userRepository.findById(friendId).then((friend) => {
-                        if (friend) {
-                            resolve(friend);
-                        } else {
-                            reject('Error : Boyle bir kullanici yok.');
-                        }
-                    }).catch((error) => {
-                        reject(error);
-                    });
-                } else {
-                    reject('Error : Arkadas Degiller');
-                }
-            })
-        });
-    }
-
-    getMyProfileCard(myId): Promise<IUser> {
-        return new Promise<IUser>((resolve, reject) => {
-            this._userRepository.getProfileCard(myId).then((profileCard) => {
-                if (profileCard) {
-                    resolve(profileCard);
-                } else {
-                    reject('Error : Boyle bir kullanici yok.');
-                }
-            }).catch((error) => {
+    getMyProfileCard(myId): Promise<IProfileCard> {
+        return new Promise<IProfileCard>((resolve, reject) => {
+            this._userRepository.getProfileCard(myId).then((profileCard: IUser) => {
+                profileCard = profileCard['_doc'];
+                delete profileCard.__v;
+                resolve(<IProfileCard>profileCard)
+            }).catch((error: Error) => {
                 reject(error);
             });
         });
     }
 
-    getMyNotifications(myId: string): Promise<ILocalNotification[]> {
-        return new Promise<ILocalNotification[]>((resolve, reject) => {
-            this._localNotificationRepository.findNotificationsForOne(myId).then((res) => {
-                console.log(res);
-                resolve(res);
-            }).catch((error) => {
-                console.log(error);
-                reject(error);
-            });
-        });
-    }
-
-    getUnReadedNotificationsCount(myId: string): Promise<number> {
-        return new Promise<number>((resolve, reject) => {
-            this._localNotificationRepository.findUnreadedNotificationsCount(myId).then((res) => {
-                console.log(res);
-                resolve(res);
-            }).catch((error) => {
-                reject(error);
-            })
-        });
-    }
-
-    makeAllNotificationsReaded(myId: string): Promise<Boolean> {
-        return new Promise<Boolean>((resolve, reject) => {
-            this._localNotificationRepository.makeAllNotificationsReadedForOne(myId).then((res) => {
-                console.log(res);
-                resolve(res);
-            }).catch((error) => {
-                reject(error);
-            })
-        });
-    }
-
-    controlUniquenessForEmail(email: string): Promise<Boolean> {
-        return new Promise<Boolean>((resolve, reject) => {
+    controlUniquenessForEmail(email: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
             this._userRepository.find({ email: email }, {}, {}).then((res) => {
                 if (res.length > 0) {
-                    reject(false);
+                    resolve(false);
                 } else {
                     resolve(true);
                 }

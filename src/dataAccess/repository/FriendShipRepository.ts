@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
-import FriendShipSchema = require("./../schemas/friendship.schema");
+import FriendShipSchema = require("../schemas/friendship.schema");
 import { IFriendShipRepository } from './interfaces/IFriendShipRepository';
 import { RepositoryBase } from './RepositoryBase';
-import { IFriendShip } from './../../models';
+import { IFriendShip } from '../../models';
 import 'reflect-metadata';
 
 @injectable()
@@ -10,8 +10,8 @@ export class FriendShipRepository extends RepositoryBase<IFriendShip> implements
     constructor() {
         super(FriendShipSchema)
     }
-    arkadaslikKontrol(myId, friendId): Promise<Boolean> {
-        let p = new Promise<Boolean>((resolve, reject) => {
+    arkadaslikKontrol(myId, friendId): Promise<boolean> {
+        let p = new Promise<boolean>((resolve, reject) => {
             FriendShipSchema
                 .find({})
                 .or([{
@@ -36,5 +36,4 @@ export class FriendShipRepository extends RepositoryBase<IFriendShip> implements
         });
         return p;
     }
-
 }

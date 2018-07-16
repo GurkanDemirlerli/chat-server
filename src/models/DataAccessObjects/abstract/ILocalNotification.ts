@@ -1,4 +1,4 @@
-import { IUser } from './../../';
+import { IUser } from '../..';
 import mongoose = require("mongoose");
 
 export interface ILocalNotification extends mongoose.Document {
@@ -6,5 +6,5 @@ export interface ILocalNotification extends mongoose.Document {
     from?: string | IUser;
     to: string | IUser;
     createdAt?: Date;
-    isRead?: Boolean;
+    isRead: boolean;
 }

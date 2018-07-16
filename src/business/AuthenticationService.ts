@@ -1,7 +1,9 @@
 import { verify } from 'jsonwebtoken';
-import { ILoginModel, ITokenModel } from './../models';
+import { ILoginModel, ITokenModel } from '../models';
 
 export class AuthenticationService {
+
+    //ESKI
     public static checkAuthentication(req): Promise<ITokenModel | null> {
         let token: string = req.body.token || req.query.token ||
             req.get('x-access-token') || req.get('authentication') || req.get('authorization') || undefined;
@@ -24,6 +26,26 @@ export class AuthenticationService {
             });
         }
     }
+
+    //YENI
+    public static decodeToken(req): Promise<ITokenModel | null> {
+        return new Promise((resolve, reject) => {
+            let token: string = req.body.token || req.query.token ||
+                req.get('x-access-token') || req.get('authentication') || req.get('authorization') || req.get('Authorization') || undefined;
+            if (token === undefined) {
+                reject('Cant find token.')
+            }
+            verify(token, 'MySecret', (err: Error, decoded: any): boolean | any => {
+                if (err) {
+                    reject('UnAuthorized');
+                }
+                req.decoded = decoded;
+                resolve(decoded);
+            });
+        });
+    }
+
+
 
     public static checkAuthenticationForSocket(token): Promise<ITokenModel | null> {
         if (token === undefined) {

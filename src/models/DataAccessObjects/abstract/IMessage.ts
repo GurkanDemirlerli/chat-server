@@ -5,4 +5,5 @@ export interface IMessage extends mongoose.Document {
     from: string;
     to: string;
     createdAt?: Date;
+    isRead?: boolean;
 }

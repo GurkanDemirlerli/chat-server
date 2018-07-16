@@ -1,1 +1,1 @@
-export let onlineUsers = {};
+export let onlineUsers: Object = {};

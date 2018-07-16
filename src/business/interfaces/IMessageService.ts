@@ -1,10 +1,8 @@
-import { IMessage } from "../../models";
+import { IMessage, MessageCreateModel, IChatMessageViewModel } from "../../models";
 
 export interface IMessageService {
-    add: (message) => any;
-    list: () => any;
-    findMessagesBetweenMyFriend(myId: string, friendId: string): Promise<IMessage[]>;
+    add(item: MessageCreateModel): Promise<IChatMessageViewModel>;
+    listChat(myId: string, friendId: string): Promise<IChatMessageViewModel[]>;
     sendMessage(message);
-    makeAllReceivedMessagesReadedFromMyFriend(myId: string, friendId: string): Promise<Boolean>;
-    findUnreadedMessagesCount(myId: string, friendId: string): Promise<number>;
+    makeChatMessagesReaded(myId: string, friendId: string): Promise<void>;
 }

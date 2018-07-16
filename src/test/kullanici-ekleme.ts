@@ -1,4 +1,4 @@
-import { UserRepository } from './../dataAccess/repository';
+import { UserRepository } from '../dataAccess/repository';
 
 export function kullaniciEkleme() {
 

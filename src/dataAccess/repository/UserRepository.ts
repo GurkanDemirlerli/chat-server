@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
-import UserSchema = require("./../schemas/user.schema");
+import UserSchema = require("../schemas/user.schema");
 import { IUserRepository } from './interfaces/IUserRepository';
 import { RepositoryBase } from './RepositoryBase';
-import { IUser } from './../../models';
+import { IUser } from '../../models';
 import 'reflect-metadata';
 
 @injectable()

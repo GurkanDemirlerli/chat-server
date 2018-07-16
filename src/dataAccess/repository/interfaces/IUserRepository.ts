@@ -1,5 +1,5 @@
 import { IRepositoryBase } from './IRepositoryBase';
-import { IUser } from './../../../models';
+import { IUser } from '../../../models';
 
 export interface IUserRepository extends IRepositoryBase<IUser> {
     changeNotificationId(userId, notifyId);

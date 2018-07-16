@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
-import LocalNotificationSchema = require("./../schemas/local-notification.schema");
+import LocalNotificationSchema = require("../schemas/local-notification.schema");
 import { ILocalNotificationRepository } from './interfaces/ILocalNotificationRepository';
 import { RepositoryBase } from './RepositoryBase';
-import { ILocalNotification } from './../../models';
+import { ILocalNotification } from '../../models';
 import 'reflect-metadata';
 
 @injectable()
@@ -40,15 +40,15 @@ export class LocalNotificationRepository extends RepositoryBase<ILocalNotificati
         });
     }
 
-    makeAllNotificationsReadedForOne(userId: string): Promise<Boolean> {
-        return new Promise<Boolean>((resolve, reject) => {
+    makeAllNotificationsReadedForOne(userId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             LocalNotificationSchema
                 .updateMany({ to: userId, isRead: false }, { isRead: true })
                 .exec((err, res) => {
                     if (err) {
-                        reject(false);
+                        reject(err);
                     } else {
-                        resolve(true);
+                        resolve();
                     }
                 });
         });

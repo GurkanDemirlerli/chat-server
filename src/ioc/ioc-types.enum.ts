@@ -8,5 +8,6 @@ export enum IOCTYPES {
     USER_SERVICE = 'UserService',
     MESSAGE_SERVICE = 'MessageService',
     NOTIFICATION_SERVICE = "NotificationService",
-    FRIEND_SHIP_SERVICE = "FriendShipService"
+    FRIEND_SHIP_SERVICE = "FriendShipService",
+    LOCAL_NOTIFICATION_SERVICE = "LocalNotificationService",
 }

@@ -1,5 +1,6 @@
 import { verify } from 'jsonwebtoken';
 import { ILoginModel, ITokenModel } from '../models';
+import { resolve } from 'path';
 
 export class AuthenticationService {
 
@@ -48,23 +49,17 @@ export class AuthenticationService {
 
 
     public static checkAuthenticationForSocket(token): Promise<ITokenModel | null> {
-        if (token === undefined) {
-            return Promise.resolve(null)
-        } else {
-            return new Promise((resolve, reject) => {
-                verify(token, 'MySecret', (err: Error, decoded: any): boolean | any => {
-                    if (err) {
-                        resolve(null);
-                    } else {
-                        resolve(decoded);
-                    }
-                });
-            }).then(result => {
-                return result
-            }).catch(err => {
-                return err
+        return new Promise((resolve, reject) => {
+            if (token === undefined) {
+                throw new Error('Cant find token');
+            }
+            verify(token, 'MySecret', (err: Error, decoded: any): boolean | any => {
+                if (err) {
+                    reject('UnAuthorized');
+                }
+                resolve(decoded);
             });
-        }
+        });
     }
 
     public static authenticatedRoute(req, res, next): void {

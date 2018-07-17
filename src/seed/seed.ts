@@ -4,6 +4,7 @@ import {
     IUserService,
     IMessageService,
     IFriendShipService,
+    ILocalNotificationService,
 } from "../business";
 import {
     SignupInput,
@@ -12,10 +13,13 @@ import {
     IFriendshipRequestViewModel,
     IProfileCard,
     MessageCreateModel,
-    IChatMessageViewModel
+    IChatMessageViewModel,
+    ILocalNotificationCreateModel,
+    ILocalNotificationViewModel
 } from '../models';
 import * as faker from 'faker';
 import chalk from 'chalk';
+import { LocalNotificationTypes } from "../enums";
 
 @injectable()
 export class SeedDatabase {
@@ -23,17 +27,21 @@ export class SeedDatabase {
     constructor(
         @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService,
         @inject(IOCTYPES.MESSAGE_SERVICE) private _messsageService: IMessageService,
-        @inject(IOCTYPES.FRIEND_SHIP_SERVICE) private _friendshipService: IFriendShipService
+        @inject(IOCTYPES.FRIEND_SHIP_SERVICE) private _friendshipService: IFriendShipService,
+        @inject(IOCTYPES.LOCAL_NOTIFICATION_SERVICE) private _localNotificationService: ILocalNotificationService,
     ) {
     }
 
     public initialize() {
         const USERCOUNT = 30;
+        let friendShips = [];
         let users = [];
         let promises = [];
         let promisesForAccepting = [];
         let promisesForRejecting = [];
         let promisesForMessaging = [];
+        let promisesForLocalNotificationsForAccepting = [];
+        let promisesForLocalNotificationsForRejecting = [];
 
         for (let i = 0; i < USERCOUNT; i++) {
             let username = faker.internet.userName();
@@ -98,10 +106,33 @@ export class SeedDatabase {
             return Promise.all(promisesForRejecting);
         }).then((rejectedFriendshipRequests: IFriendshipRequestViewModel[]) => {
             console.log('Bazı istekler reddedildi.')
+            for (let i = 0; i < rejectedFriendshipRequests.length; i++) {
+                let notificationModel: ILocalNotificationCreateModel = <ILocalNotificationCreateModel>{
+                    contentType: LocalNotificationTypes.FRIEND_REQUEST_REJECTED,
+                    from: rejectedFriendshipRequests[i].receiver._id,
+                    to: rejectedFriendshipRequests[i].sender._id
+                };
+                promisesForLocalNotificationsForRejecting.push(this._localNotificationService.createNotification(notificationModel));
+            }
+            return Promise.all(promisesForLocalNotificationsForRejecting);
+        }).then((rejectedNotifications: ILocalNotificationViewModel[]) => {
+            console.log('Reddedilen istekler için Bildirimler eklendi.');
             return Promise.all(promisesForAccepting);
-        }).then((friendShips: IFriendshipViewModel[]) => {
-            promisesForMessaging = [];
+        }).then((data: IFriendshipViewModel[]) => {
             console.log('Bazı istekler kabul edildi.');
+            friendShips = data;
+            for (let i = 0; i < friendShips.length; i++) {
+                let notificationModel: ILocalNotificationCreateModel = <ILocalNotificationCreateModel>{
+                    contentType: LocalNotificationTypes.FRIEND_REQUEST_ACCEPTED,
+                    from: friendShips[i].acceptor._id,
+                    to: friendShips[i].sender._id
+                };
+                promisesForLocalNotificationsForAccepting.push(this._localNotificationService.createNotification(notificationModel));
+            }
+            return Promise.all(promisesForLocalNotificationsForAccepting);
+        }).then((acceptedNotifications: ILocalNotificationViewModel[]) => {
+            console.log('Kabul edilen istekler için Bildirimler eklendi.');
+            promisesForMessaging = [];
             for (let i = 0; i < friendShips.length; i++) {
                 let totalChatMessages = Math.floor(Math.random() * 100);//[0,100] araliginda
                 for (let j = 0; j < totalChatMessages; j++) {

@@ -3,13 +3,19 @@ import { IOCTYPES } from "../ioc";
 import {
     IUserService,
     IMessageService,
-    IFriendShipService
+    IFriendShipService,
 } from "../business";
 import {
-    SignupInput, FriendshipRequestCreateModel
+    SignupInput,
+    FriendshipRequestCreateModel,
+    IFriendshipViewModel,
+    IFriendshipRequestViewModel,
+    IProfileCard,
+    MessageCreateModel,
+    IChatMessageViewModel
 } from '../models';
 import * as faker from 'faker';
-import { IUser } from '../models/DataAccessObjects/abstract/IUser';
+import chalk from 'chalk';
 
 @injectable()
 export class SeedDatabase {
@@ -22,9 +28,13 @@ export class SeedDatabase {
     }
 
     public initialize() {
-        const USERCOUNT = 250;
+        const USERCOUNT = 30;
         let users = [];
         let promises = [];
+        let promisesForAccepting = [];
+        let promisesForRejecting = [];
+        let promisesForMessaging = [];
+
         for (let i = 0; i < USERCOUNT; i++) {
             let username = faker.internet.userName();
             let firstname = faker.name.firstName();
@@ -43,7 +53,7 @@ export class SeedDatabase {
             promises.push(this._userService.signup(users[i]));
         }
 
-        Promise.all(promises).then((createdUsers) => {
+        Promise.all(promises).then((createdUsers: IProfileCard[]) => {
             console.log('Kullanıcılar Eklendi.')
             users = createdUsers;
             let promises = [];
@@ -60,182 +70,72 @@ export class SeedDatabase {
                 }
             }
 
-            Promise.all(promises).then((sendedFriendshipRequests) => {
-                console.log('Arkadaşlık istekleri eklendi.');
-                promises = [];
-                let iteration = 0;
-                for (let i = 0; i < USERCOUNT; i++) {
-                    for (let j = i + 1; j < USERCOUNT; j++) {
-                        let option = Math.floor(Math.random() * 3) + 1;
-                        switch (option) {
-                            case 1:
-                                promises.push(this._friendshipService.acceptFriendshipRequest(sendedFriendshipRequests[iteration]._id, sendedFriendshipRequests[iteration].receiver._id.toString()));
-                                break;
-                            case 2:
-                                promises.push(this._friendshipService.rejectFriendshipRequest(sendedFriendshipRequests[iteration]._id, sendedFriendshipRequests[iteration].receiver._id.toString()));
-                                break;
-                            default:
-                                //istek beklemede kalacak.
-                                break;
-                        }
-                        iteration++;
+            return Promise.all(promises);
+        }).then((sendedFriendshipRequests: IFriendshipRequestViewModel[]) => {
+            console.log('Arkadaşlık istekleri eklendi.');
+            promises = [];
+            promisesForAccepting = [];
+            promisesForRejecting = [];
+            let iteration = 0;
+            for (let i = 0; i < USERCOUNT; i++) {
+                for (let j = i + 1; j < USERCOUNT; j++) {
+                    let option = Math.floor(Math.random() * 3) + 1;//[1,3] araliginda 
+                    switch (option) {
+                        case 1:
+                            promisesForAccepting.push(this._friendshipService.acceptFriendshipRequest(sendedFriendshipRequests[iteration]._id, sendedFriendshipRequests[iteration].receiver._id.toString()));
+                            break;
+                        case 2:
+                            promisesForRejecting.push(this._friendshipService.rejectFriendshipRequest(sendedFriendshipRequests[iteration]._id, sendedFriendshipRequests[iteration].receiver._id.toString()));
+                            break;
+                        default:
+                            //istek beklemede kalacak.
+                            break;
                     }
+                    iteration++;
                 }
+            }
+            console.log('Bazı istekler bekletildi.');
+            return Promise.all(promisesForRejecting);
+        }).then((rejectedFriendshipRequests: IFriendshipRequestViewModel[]) => {
+            console.log('Bazı istekler reddedildi.')
+            return Promise.all(promisesForAccepting);
+        }).then((friendShips: IFriendshipViewModel[]) => {
+            promisesForMessaging = [];
+            console.log('Bazı istekler kabul edildi.');
+            for (let i = 0; i < friendShips.length; i++) {
+                let totalChatMessages = Math.floor(Math.random() * 100);//[0,100] araliginda
+                for (let j = 0; j < totalChatMessages; j++) {
+                    let randomForMessageSender = Math.floor(Math.random() * 2);//[0,1] araliginda
+                    let messageSender;
+                    let messageReceiver;
+                    let content = faker.lorem.sentence(Math.floor(Math.random() * 11) + 1, Math.floor(Math.random() * 100) + 1)
+                    if (randomForMessageSender === 0) {
+                        messageSender = friendShips[i].sender._id;
+                        messageReceiver = friendShips[i].acceptor._id;
+                    }
+                    else {
+                        messageSender = friendShips[i].acceptor._id;
+                        messageReceiver = friendShips[i].sender._id;
+                    }
+                    let message = new MessageCreateModel(
+                        messageSender,
+                        messageReceiver,
+                        content
+                    )
+                    promisesForMessaging.push(this._messsageService.add(message));
+                }
+            }
+            return Promise.all(promisesForMessaging);
 
-            });
+        }).then((messages: IChatMessageViewModel[]) => {
+            console.log('Mesajlar eklendi');
+
+
+
+
+            console.log(chalk.blue('Seed is Done'));
         }).catch((error: Error) => {
             console.log(error);
         });
     }
-
-    // public temp() {
-    //     const user1: ISignupModel = {
-    //         name: "ronaldo",
-    //         email: "ronaldo@example.com",
-    //         password: "Password123."
-    //     }
-
-    //     const user2: ISignupModel = {
-    //         name: "messi",
-    //         email: "messi@example.com",
-    //         password: "Password123."
-    //     }
-
-    //     const user3: ISignupModel = {
-    //         name: "neymar",
-    //         email: "neymar@example.com",
-    //         password: "Password123."
-    //     }
-
-    //     const user4: ISignupModel = {
-    //         name: "drogba",
-    //         email: "drogba@example.com",
-    //         password: "Password123."
-    //     }
-
-    //     Promise.all([
-    //         this._userService.signup(user1),
-    //         this._userService.signup(user2),
-    //         this._userService.signup(user3),
-    //         this._userService.signup(user4),
-    //     ]).then((users) => {
-    //         console.log(users);
-
-    //         const ronaldo = users[0];
-    //         const messi = users[1];
-    //         const neymar = users[2];
-    //         const drogba = users[3];
-
-    //         let ronaldodan_messiye_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
-    //             sender: ronaldo._id,
-    //             receiver: messi._id,
-    //         };
-
-    //         let ronaldodan_neymara_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
-    //             sender: ronaldo._id,
-    //             receiver: neymar._id,
-    //         };
-
-    //         let drogbadan_messiye_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
-    //             sender: drogba._id,
-    //             receiver: messi._id
-    //         }
-
-    //         let neymardan_drogbaya_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
-    //             sender: neymar._id,
-    //             receiver: drogba._id
-    //         }
-
-    //         let drogbadan_ronaldoya_arkadaslik_istegi: IFriendRequest = <IFriendRequest>{
-    //             sender: drogba._id,
-    //             receiver: ronaldo._id
-    //         }
-
-    //         Promise.all([
-    //             this._userService.sendFriendShipRequest(ronaldodan_messiye_arkadaslik_istegi),
-    //             this._userService.sendFriendShipRequest(ronaldodan_neymara_arkadaslik_istegi),
-    //             this._userService.sendFriendShipRequest(drogbadan_messiye_arkadaslik_istegi),
-    //             this._userService.sendFriendShipRequest(neymardan_drogbaya_arkadaslik_istegi),
-    //             this._userService.sendFriendShipRequest(drogbadan_ronaldoya_arkadaslik_istegi),
-    //         ]).then((istekler) => {
-    //             console.log(istekler);
-    //             const ronaldodan_messiye_arkadaslik_istegi_id = istekler[0]._id;
-    //             const ronaldodan_neymara_arkadaslik_istegi_id = istekler[1]._id;
-    //             const drogbadan_messiye_arkadaslik_istegi_id = istekler[2]._id;
-    //             const neymardan_drogbaya_arkadaslik_istegi_id = istekler[3]._id;
-    //             const drogbadan_ronaldoya_arkadaslik_istegi_id = istekler[4]._id;
-    //             Promise.all([
-    //                 this._userService.acceptFriendShipRequest(ronaldodan_messiye_arkadaslik_istegi_id, messi._id),
-    //                 this._userService.acceptFriendShipRequest(ronaldodan_neymara_arkadaslik_istegi_id, neymar._id),
-    //                 this._userService.acceptFriendShipRequest(drogbadan_messiye_arkadaslik_istegi_id, messi._id),
-    //                 this._userService.acceptFriendShipRequest(neymardan_drogbaya_arkadaslik_istegi_id, drogba._id),
-    //                 this._userService.acceptFriendShipRequest(drogbadan_ronaldoya_arkadaslik_istegi_id, ronaldo._id),
-    //             ]).then((arkadaslik) => {
-    //                 console.log(arkadaslik);
-
-    //                 //Ronaldonun Arkadaslarini goster.
-    //                 this._userService.listMyFriends(ronaldo._id).then((arkadaslar) => {
-    //                     console.log('Ronaldonun Arkadaşları', arkadaslar);
-
-    //                     let ronaldodan_messiye_mesaj_1: IMessage = <IMessage>{
-    //                         content: "In ac consectetur. Incondimentum",
-    //                         from: ronaldo._id,
-    //                         to: messi._id
-    //                     };
-
-    //                     let messiden_ronaldoya_mesaj_1: IMessage = <IMessage>{
-    //                         content: "quis nostrud exercitation ullamco consectetur",
-    //                         from: messi._id,
-    //                         to: ronaldo._id
-    //                     };
-
-    //                     let ronaldodan_messiye_mesaj_2: IMessage = <IMessage>{
-    //                         content: "mollit anim id est laborum.",
-    //                         from: ronaldo._id,
-    //                         to: messi._id
-    //                     };
-
-    //                     let ronaldodan_messiye_mesaj_3: IMessage = <IMessage>{
-    //                         content: "usmod tempor incididunt ut labore et",
-    //                         from: ronaldo._id,
-    //                         to: messi._id
-    //                     };
-
-    //                     let messiden_ronaldoya_mesaj_2: IMessage = <IMessage>{
-    //                         content: "Duis aute irure int occaecat cupidatat non",
-    //                         from: messi._id,
-    //                         to: ronaldo._id
-    //                     };
-
-    //                     Promise.all([
-    //                         this._messsageService.add(ronaldodan_messiye_mesaj_1),
-    //                         this._messsageService.add(messiden_ronaldoya_mesaj_1),
-    //                         this._messsageService.add(ronaldodan_messiye_mesaj_2),
-    //                         this._messsageService.add(ronaldodan_messiye_mesaj_3),
-    //                         this._messsageService.add(messiden_ronaldoya_mesaj_2),
-    //                     ]).then((mesajlar) => {
-    //                         console.log("Ronaldo ve Messi Arasındaki Mesajlar", mesajlar);
-    //                     }).catch((error) => {
-    //                         console.log(error);
-    //                     })
-
-    //                 }).catch((error) => {
-    //                     console.log(error);
-    //                 });
-    //             }).catch((error) => {
-    //                 console.log(error);
-    //             })
-
-    //         }).catch((error) => {
-    //             console.log(error);
-    //         });
-
-
-
-    //     }).catch((error) => {
-    //         console.log(error);
-    //     });
-    // }
-
-
 }

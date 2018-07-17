@@ -304,6 +304,7 @@ export class FriendShipService implements IFriendShipService {
                         }]
                     })
                 .then((res: any[]) => {
+                    console.log('ress', res);
                     let result = res.map(async (r: any) => {
                         let friend: IFriendViewModel;
                         if (r.sender._id.toString() === userId) {

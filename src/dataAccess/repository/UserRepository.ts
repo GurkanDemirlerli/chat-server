@@ -101,7 +101,7 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
         let p = new Promise<IUser>((resolve, reject) => {
             UserSchema
                 .findById(userId)
-                .select('_id name email about')
+                .select('_id username firstname lastname about')
                 .exec((err, res) => {
                     if (err) {
                         reject(err);

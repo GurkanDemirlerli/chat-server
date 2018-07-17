@@ -25,6 +25,7 @@ export class UsersController {
     ) { }
 
     signup(req: express.Request, res: express.Response, next: express.NextFunction) {
+        console.log(req.body);
         let signupInput: SignupInput = new SignupInput(
             req.body.email,
             req.body.username,
@@ -32,7 +33,8 @@ export class UsersController {
             req.body.lastname,
             req.body.password
         );
-        validate(signupInput).then((errors) => {
+        console.log(signupInput);
+        validate(signupInput,{ skipMissingProperties: true }).then((errors) => {
             if (errors.length > 0) {
                 throw new AppError(
                     'Validation Error',

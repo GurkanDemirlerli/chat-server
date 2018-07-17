@@ -21,7 +21,7 @@ export class SocketHandler {
             socket.on('storeClientInfo', (token) => {
                 let myId: string;
                 AuthenticationService.checkAuthenticationForSocket(token).then((decodedToken) => {
-                    myId = myId;
+                    myId = decodedToken._id;
                     socket[myId] = myId;
                     if (onlineUsers.hasOwnProperty(myId)) {
                         onlineUsers[myId].socketIds.push(socket.id);
@@ -41,43 +41,77 @@ export class SocketHandler {
                         }
                     }
                 }).catch((error: Error) => {
-                    console.log(error);
+                    console.log('error at storeClientInfo ', error);
                 });
             });
 
             socket.on('disconnect', () => {
-                Object.keys(onlineUsers).forEach(user => {
-                    onlineUsers[user].socketIds.forEach(socketId => {
-                        if (socketId == socket.id) {
-                            if (onlineUsers[user].socketIds.length > 1) {
-                                var index = onlineUsers[user].socketIds.indexOf(socket.id);
-                                onlineUsers[user].socketIds.splice(index, 1);
-                            } else {
-
-                                delete onlineUsers[user];
-
-                                this._userService.listMyFriends(user).then((friends) => {
-                                    friends.forEach(friend => {
-                                        try {
-                                            onlineUsers[friend._id].socketIds.forEach(friendSocketId => {
-                                                io.to(friendSocketId).emit('beingOffline', user);
-                                            });
-                                        } catch (error) {
-                                        }
-                                    });
-                                }).catch((error) => {
-                                    console.log(error);
-                                });
+                try {
+                    for (let key in onlineUsers) {
+                        if (onlineUsers[key].socketIds.length > 1) {
+                            for (let i = 0; i < onlineUsers[key].socketIds.length; i++) {
+                                onlineUsers[key].socketIds.splice(i, 1);
                             }
+                        } else {
+                            delete onlineUsers[key];
+                            this._friendShipService.listFriends(key).then((friends) => {
+                                for (let i = 0; i < friends.length; i++) {
+                                    if (onlineUsers.hasOwnProperty(friends[i]._id)) {
+                                        for (let j = 0; j < onlineUsers[friends[i]._id].socketIds.length; i++) {
+                                            io.to(onlineUsers[friends[i]._id].socketIds[j]).emit('beingOffline', key)
+                                        }
+                                    }
+                                }
+                            });
                         }
-                    });
-                });
+                    }
+                } catch (error) {
+                    console.log('error at disconnect ', error);
+                }
             });
         });
     }
 }
 
 //ESKI
+
+// Object.keys(onlineUsers).forEach(user => {
+//     onlineUsers[user].socketIds.forEach(socketId => {
+//         if (socketId == socket.id) {
+//             if (onlineUsers[user].socketIds.length > 1) {
+//                 var index = onlineUsers[user].socketIds.indexOf(socket.id);
+//                 onlineUsers[user].socketIds.splice(index, 1);
+//             } else {
+
+//                 delete onlineUsers[user];
+
+//                 this._userService.listMyFriends(user).then((friends) => {
+//                     friends.forEach(friend => {
+//                         try {
+//                             onlineUsers[friend._id].socketIds.forEach(friendSocketId => {
+//                                 io.to(friendSocketId).emit('beingOffline', user);
+//                             });
+//                         } catch (error) {
+//                         }
+//                     });
+//                 }).catch((error) => {
+//                     console.log('error at disconnect ', error);
+//                 });
+//             }
+//         }
+//     });
+// });
+
+
+
+
+
+
+
+
+
+
+
 
                 // try {
                 //     AuthenticationService.checkAuthenticationForSocket(token).then((isAuth) => {

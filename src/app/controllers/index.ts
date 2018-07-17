@@ -1,3 +1,4 @@
+export { AuthController } from './AuthController';
 export { FriendShipController } from './FriendShipController';
 export { UsersController } from './UsersController';
 export { MessagesController } from './MessagesController';

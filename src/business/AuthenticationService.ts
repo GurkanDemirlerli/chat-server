@@ -76,6 +76,23 @@ export class AuthenticationService {
         });
     }
 
+    public static isAuthenticated(req): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let token: string = req.body.token || req.query.token ||
+                req.get('x-access-token') || req.get('authentication') || req.get('authorization') || req.get('Authorization') || undefined;
+            if (token === undefined) {
+                resolve(false);
+            }
+            verify(token, 'MySecret', (err: Error, decoded: any): boolean | any => {
+                if (err) {
+                    resolve(false);
+                }
+                req.decoded = decoded;
+                resolve(true);
+            });
+        });
+    }
+
     // public static provideToken(req, res, next) {
 
     // }

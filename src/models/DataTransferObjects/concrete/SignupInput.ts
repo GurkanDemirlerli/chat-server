@@ -22,7 +22,7 @@ export class SignupInput {
     @Matches(/^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[\d])(?=.*?[\W]).{8,35}$/, "Password Must have at least one uppercase, lowercase, special character, and number")
     private password: string;
 
-    @Length(0, 300, { message: "about of you must be maximum 300 characters" })
+    @Max(300, { message: "about of you must be maximum 300 characters" })
     private about?: string;
 
     constructor(

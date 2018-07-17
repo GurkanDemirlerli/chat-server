@@ -9,6 +9,7 @@ import {
     UsersController,
     FriendShipController,
     LocalNotificationsController,
+    AuthController,
 } from '../app/controllers';
 //#endregion
 
@@ -76,6 +77,9 @@ export module IOC {
             .bind<LocalNotificationsController>(LocalNotificationsController)
             .toSelf()
 
+        container
+            .bind<AuthController>(AuthController)
+            .toSelf()
 
 
         //#endregion

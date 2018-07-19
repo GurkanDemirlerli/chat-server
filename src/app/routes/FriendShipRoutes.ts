@@ -29,11 +29,11 @@ export class FriendShipRoutes {
         app.route(root + '/listReceivedRequests')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.listReceivedRequests(req, res, next));
 
-        app.route(root + '/remove/:id')
-            .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.remove(req, res, next));
-
         app.route(root + '/listFriends')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.listFriends(req, res, next));
+
+        app.route(root + '/remove/:id')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.remove(req, res, next));
 
         app.route(root + '/findFriend/:friendId')
             .get(AuthenticationService.authenticatedRoute, (req, res, next) => friendShipController.findFriend(req, res, next));

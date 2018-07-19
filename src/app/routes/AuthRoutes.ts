@@ -8,11 +8,19 @@ export class AuthRoutes {
         const root = "/api/auth";
         const authController = container.get(AuthController);
 
+        app.route(root + '/signup')
+            .post((req, res, next) => authController.signup(req, res, next));
+
+        app.route(root + '/login')
+            .post((req, res, next) => authController.login(req, res, next));
+
         app.route(root + '/isAuthenticated')
             .get((req, res, next) => authController.isAuthenticated(req, res, next));
 
+        app.route(root + '/controlUniquenessForEmail/:email')
+            .get((req, res, next) => authController.controlUniquenessForEmail(req, res, next));
 
-        app.route(root + '/test')
-            .get((req, res, next) => authController.test(req, res, next));
+        app.route(root + '/getMyProfileCard')
+            .get(AuthenticationService.authenticatedRoute, (req, res, next) => authController.getMyProfileCard(req, res, next));
     }
 }

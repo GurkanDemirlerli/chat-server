@@ -46,6 +46,7 @@ export interface IUserDetails extends IUserSummary {
 export interface IFriendViewModel extends IUserDetails {
     status?: string;//online ve offline var simdilik. enuma cevrilecek.
     unReadedMessagesCount?: number;
+    friendshipId?: string;
 }
 
 export interface IFriendshipViewModel {

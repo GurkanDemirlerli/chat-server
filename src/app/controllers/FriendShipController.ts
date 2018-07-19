@@ -3,7 +3,6 @@ import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../../ioc/ioc-types.enum';
 import {
     AuthenticationService,
-    IUserService,
     IFriendShipService,
     ILocalNotificationService
 } from '../../business';
@@ -18,7 +17,6 @@ import {
     IFriendViewModel
 } from '../../models';
 import { onlineUsers } from '../../socket/online-users';
-import { AppError } from '../../errors/AppError';
 import { ErrorHandler } from '../../errors/ErrorHandler';
 import { LocalNotificationTypes } from '../../enums';
 import 'reflect-metadata';

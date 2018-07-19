@@ -23,6 +23,7 @@ import {
     FriendshipRequestStatusTypes as FRST,
 } from '../enums';
 import 'reflect-metadata';
+import { populateMongooseUserFields } from '../utils';
 
 
 @injectable()
@@ -54,7 +55,7 @@ export class FriendShipService implements IFriendShipService {
                     }, {
                         populate: {
                             path: 'receiver',
-                            select: '_id username firstname lastname'
+                            select: populateMongooseUserFields.forUserSummary
                         }
                     })
                 .then((res: IFriendRequest[]) => {
@@ -78,7 +79,7 @@ export class FriendShipService implements IFriendShipService {
                     }, {
                         populate: {
                             path: 'sender',
-                            select: '_id username firstname lastname'
+                            select: populateMongooseUserFields.forUserSummary
                         }
                     })
                 .then((res: IFriendRequest[]) => {
@@ -134,10 +135,10 @@ export class FriendShipService implements IFriendShipService {
                     {
                         populate: [{
                             path: 'sender',
-                            select: '_id username firstname lastname'
+                            select: populateMongooseUserFields.forUserSummary
                         }, {
                             path: 'receiver',
-                            select: '_id username firstname lastname'
+                            select: populateMongooseUserFields.forUserSummary
                         }]
                     });
             }).then((res: IFriendRequest) => {
@@ -165,10 +166,10 @@ export class FriendShipService implements IFriendShipService {
                     {
                         populate: [{
                             path: 'sender',
-                            select: '_id username firstname lastname about'
+                            select: populateMongooseUserFields.forUserDetails
                         }, {
                             path: 'acceptor',
-                            select: '_id username firstname lastname about'
+                            select: populateMongooseUserFields.forUserDetails
                         }]
                     });
             }).then((res: IFriendShip) => {
@@ -243,10 +244,10 @@ export class FriendShipService implements IFriendShipService {
                     {
                         populate: [{
                             path: 'sender',
-                            select: '_id username firstname lastname'
+                            select:populateMongooseUserFields.forUserSummary
                         }, {
                             path: 'receiver',
-                            select: '_id username firstname lastname'
+                            select:populateMongooseUserFields.forUserSummary
                         }]
                     });
             }).then((res: IFriendRequest) => {
@@ -297,17 +298,17 @@ export class FriendShipService implements IFriendShipService {
                     {
                         populate: [{
                             path: 'sender',
-                            select: '_id username firstname lastname about'
+                            select: populateMongooseUserFields.forUserDetails
                         }, {
                             path: 'acceptor',
-                            select: '_id username firstname lastname about'
+                            select: populateMongooseUserFields.forUserDetails
                         }, {
                             path: 'chat',
                             match: { to: userId, isRead: false },
                             select: '_id'
                         }]
                     })
-                .then((res: any[]) => {
+                .then((res: IFriendShip[]) => {
                     let result = res.map(async (r: any) => {
                         let friend: IFriendViewModel;
                         if (r.sender._id.toString() === userId) {
@@ -317,6 +318,7 @@ export class FriendShipService implements IFriendShipService {
                             friend = r['_doc'].sender['_doc'];
                         }
                         friend.unReadedMessagesCount = r.chat.length;
+                        friend.friendshipId = r['_doc']._id;
                         return friend;
                     });
                     Promise.all(result).then((results) => {

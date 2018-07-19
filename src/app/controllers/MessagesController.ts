@@ -6,8 +6,8 @@ import { validate } from 'class-validator';
 import { AppError } from '../../errors/AppError';
 import { MessageCreateModel, IChatMessageViewModel } from '../../models';
 import { onlineUsers } from '../../socket/online-users';
-import 'reflect-metadata';
 import { ErrorHandler } from '../../errors/ErrorHandler';
+import 'reflect-metadata';
 
 
 @injectable()

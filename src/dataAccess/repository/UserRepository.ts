@@ -1,3 +1,4 @@
+import { populateMongooseUserFields } from './../../utils/PopulateMongooseUserFields';
 import { injectable } from 'inversify';
 import UserSchema = require("../schemas/user.schema");
 import { IUserRepository } from './interfaces/IUserRepository';
@@ -101,7 +102,7 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
         let p = new Promise<IUser>((resolve, reject) => {
             UserSchema
                 .findById(userId)
-                .select('_id username firstname lastname about')
+                .select(populateMongooseUserFields.forUserDetails)
                 .exec((err, res) => {
                     if (err) {
                         reject(err);

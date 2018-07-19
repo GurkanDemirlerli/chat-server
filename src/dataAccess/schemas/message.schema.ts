@@ -27,6 +27,10 @@ class MessageSchema {
             isRead: {
                 type: Boolean,
                 default: false
+            },
+            ownerFriendship: {
+                type: Schema.Types.ObjectId,
+                ref: 'FriendShip'
             }
         });
         return schema;

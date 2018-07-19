@@ -1,3 +1,4 @@
+import { IFriendshipRequestViewModel } from './../models/index';
 import { inject, injectable } from "inversify";
 import { IOCTYPES } from "../ioc";
 import {
@@ -10,7 +11,6 @@ import {
     SignupInput,
     FriendshipRequestCreateModel,
     IFriendshipViewModel,
-    IFriendshipRequestViewModel,
     IProfileCard,
     MessageCreateModel,
     IChatMessageViewModel,
@@ -33,8 +33,8 @@ export class SeedDatabase {
     }
 
     public initialize() {
-        const USERCOUNT = 30;
-        let friendShips = [];
+        const USERCOUNT = 50;
+        let friendShips: IFriendshipViewModel[] = [];
         let users = [];
         let promises = [];
         let promisesForAccepting = [];
@@ -151,7 +151,8 @@ export class SeedDatabase {
                     let message = new MessageCreateModel(
                         messageSender,
                         messageReceiver,
-                        content
+                        content,
+                        friendShips[i]._id
                     )
                     promisesForMessaging.push(this._messsageService.add(message));
                 }

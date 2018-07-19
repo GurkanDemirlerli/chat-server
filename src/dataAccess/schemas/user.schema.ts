@@ -44,17 +44,32 @@ class UserSchema {
             }
         });
 
-        // schema.virtual('friendshipsByRequested', {
-        //     ref: 'FriendShip',
-        //     localField: '_id',
-        //     foreignField: 'sender'
-        // });
+        schema.virtual('sendedMessages', {
+            ref: 'Message',
+            localField: '_id',
+            foreignField: 'from'
+        });
 
-        // schema.virtual('friendshipsByAccepted', {
-        //     ref: 'FriendShip',
-        //     localField: '_id',
-        //     foreignField: 'acceptor'
-        // });
+        schema.virtual('receivedMessages', {
+            ref: 'Message',
+            localField: '_id',
+            foreignField: 'to'
+        });
+
+        schema.virtual('friendshipsByRequested', {
+            ref: 'FriendShip',
+            localField: '_id',
+            foreignField: 'sender'
+        });
+
+        schema.virtual('friendshipsByAccepted', {
+            ref: 'FriendShip',
+            localField: '_id',
+            foreignField: 'acceptor'
+        });
+
+        schema.set('toObject', { virtuals: true });
+        schema.set('toJSON', { virtuals: true });
 
         // schema.virtual('friends').get(function () {
         //     let friendsA = this.friendshipsByRequested.map((r) => {

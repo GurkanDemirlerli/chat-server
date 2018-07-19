@@ -30,5 +30,6 @@ export class UserRoutes {
             .get((req, res, next) => usersController.controlUniquenessForEmail(req, res, next));
 
 
+
     }
 }

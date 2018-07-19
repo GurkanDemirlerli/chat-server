@@ -21,7 +21,24 @@ class FriendShipSchema {
                 type: Date,
                 default: Date.now()
             },
+            unreadMessagesCountForSender: {
+                type: Number,
+                default: 0
+            },
+            unreadMessagesCountForAcceptor: {
+                type: Number,
+                default: 0
+            }
         });
+
+        schema.virtual('chat', {
+            ref: 'Message',
+            localField: '_id',
+            foreignField: 'ownerFriendship'
+        });
+
+        schema.set('toObject', { virtuals: true });
+        schema.set('toJSON', { virtuals: true });
 
         return schema;
     }

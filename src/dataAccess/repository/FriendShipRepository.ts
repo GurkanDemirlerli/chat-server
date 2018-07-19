@@ -36,4 +36,11 @@ export class FriendShipRepository extends RepositoryBase<IFriendShip> implements
         });
         return p;
     }
+
+    // findUnreadedMessagesForAll(friendshipId: string): Promise<number[]> {
+    //     return new Promise<number[]>((resolve, reject) => {
+    //         FriendShipSchema
+    //             .find({"chat.count":})
+    //     });
+    // }
 }

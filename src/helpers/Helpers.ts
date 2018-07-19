@@ -18,4 +18,24 @@ export module Helpers {
         return false;
     }
 
+    export function getMongooseObject<T>(object: any): T {
+        let source: any = object;
+        if (object.hasOwnProperty('_doc')) {
+            source = object._doc;
+            source.id = object.id;
+        }
+
+        if (source.hasOwnProperty('_id')) {
+            delete source._id;
+        }
+
+        if (source.hasOwnProperty('__v')) {
+            delete source.__v;
+        }
+
+        return <T>source;
+    }
+
+
+
 }

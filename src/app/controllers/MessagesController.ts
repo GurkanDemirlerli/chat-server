@@ -23,7 +23,8 @@ export class MessagesController {
             message = new MessageCreateModel(
                 decodedToken._id,
                 req.body.to,
-                req.body.content
+                req.body.content,
+                req.body.ownerFriendship
             )
             //validation eklenecek
             return validate(message);

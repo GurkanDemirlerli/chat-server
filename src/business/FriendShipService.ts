@@ -301,10 +301,13 @@ export class FriendShipService implements IFriendShipService {
                         }, {
                             path: 'acceptor',
                             select: '_id username firstname lastname about'
+                        }, {
+                            path: 'chat',
+                            match: { to: userId, isRead: false },
+                            select: '_id'
                         }]
                     })
                 .then((res: any[]) => {
-                    console.log('ress', res);
                     let result = res.map(async (r: any) => {
                         let friend: IFriendViewModel;
                         if (r.sender._id.toString() === userId) {
@@ -313,7 +316,7 @@ export class FriendShipService implements IFriendShipService {
                         else {
                             friend = r['_doc'].sender['_doc'];
                         }
-                        friend.unReadedMessagesCount = await this._messageRepository.findUnreadedMessagesCount(userId, friend._id);
+                        friend.unReadedMessagesCount = r.chat.length;
                         return friend;
                     });
                     Promise.all(result).then((results) => {

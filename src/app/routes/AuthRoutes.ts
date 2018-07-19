@@ -11,5 +11,8 @@ export class AuthRoutes {
         app.route(root + '/isAuthenticated')
             .get((req, res, next) => authController.isAuthenticated(req, res, next));
 
+
+        app.route(root + '/test')
+            .get((req, res, next) => authController.test(req, res, next));
     }
 }

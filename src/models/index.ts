@@ -102,16 +102,19 @@ export class MessageCreateModel {
     from: string;
     to: string;
     content: string;
+    ownerFriendship: string;
 
     constructor(
         from: string,
         to: string,
         content: string,
+        ownerFriendship: string,
 
     ) {
         this.from = from;
         this.to = to;
         this.content = content;
+        this.ownerFriendship = ownerFriendship;
     }
 }
 

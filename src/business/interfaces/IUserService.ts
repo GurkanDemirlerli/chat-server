@@ -16,4 +16,5 @@ export interface IUserService {
     searchUsers(name, limit, skip, myId): Promise<IUserSearchResultModel[]>
     getMyProfileCard(myId: string): Promise<IProfileCard>;
     controlUniquenessForEmail(email: string): Promise<boolean>;
+    test(userId: string): Promise<any[]>;
 }

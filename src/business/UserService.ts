@@ -216,4 +216,44 @@ export class UserService implements IUserService {
         });
     }
 
+
+    test(userId: string): Promise<any[]> {
+        return new Promise<any[]>((resolve, reject) => {
+            this._userRepository.find({ _id: userId }, {},
+                {
+                    populate: [{
+                        path: 'friendshipsByRequested',
+                        model: 'FriendShip',
+                        populate: {
+                            path: 'acceptor',
+                            model: 'User',
+                            populate: {
+                                path: 'sendedMessages',
+                                model: 'Message',
+                                match: { to: userId }
+                            }
+                        }
+                    }, {
+                        path: 'friendshipsByAccepted',
+                        model: 'FriendShip',
+                        populate:
+                        {
+                            path: 'sender',
+                            model: 'User',
+                            populate: {
+                                path: 'sendedMessages',
+                                model: 'Message',
+                                match: { to: userId }
+                            }
+                        },
+                    }]
+                }).then((data) => {
+                    console.log(data);
+                    resolve(data);
+                }).catch((error) => {
+                    reject(error);
+                })
+        });
+    }
+
 }

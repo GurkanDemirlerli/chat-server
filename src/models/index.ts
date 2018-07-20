@@ -148,3 +148,16 @@ export interface ISignupResult {
 export interface IUserSearchResult {
 
 }
+
+export class OnlineUser {
+    _id: string;
+    socketIds: string[] = [];
+
+    constructor(socketId: string) {
+        this.socketIds.push(socketId);
+    }
+
+    addNewSocket(socketId: string) {
+        this.socketIds.push(socketId);
+    }
+}

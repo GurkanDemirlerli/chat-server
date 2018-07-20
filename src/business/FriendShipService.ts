@@ -24,6 +24,7 @@ import {
 } from '../enums';
 import 'reflect-metadata';
 import { populateMongooseUserFields } from '../utils';
+import { resolve } from '../../node_modules/@types/bluebird';
 
 
 @injectable()
@@ -244,10 +245,10 @@ export class FriendShipService implements IFriendShipService {
                     {
                         populate: [{
                             path: 'sender',
-                            select:populateMongooseUserFields.forUserSummary
+                            select: populateMongooseUserFields.forUserSummary
                         }, {
                             path: 'receiver',
-                            select:populateMongooseUserFields.forUserSummary
+                            select: populateMongooseUserFields.forUserSummary
                         }]
                     });
             }).then((res: IFriendRequest) => {
@@ -324,6 +325,30 @@ export class FriendShipService implements IFriendShipService {
                     Promise.all(result).then((results) => {
                         resolve(<IFriendViewModel[]>results);
                     });
+                }).catch((error: Error) => {
+                    reject(error);
+                });
+        });
+    }
+
+    getFriendIds(userId: string): Promise<string[]> {
+        return new Promise<string[]>((resolve, reject) => {
+            this._friendShipRepository
+                .find({ $or: [{ sender: userId }, { acceptor: userId }] },
+                    {},
+                    {})
+                .then((res: IFriendShip[]) => {
+                    let result = res.map((r) => {
+                        let friendId: string;
+                        if (r.sender.toString() === userId) {
+                            friendId = r['_doc'].acceptor;
+                        }
+                        else {
+                            friendId = r['_doc'].sender;
+                        }
+                        return friendId;
+                    });
+                    resolve(<string[]>result);
                 }).catch((error: Error) => {
                     reject(error);
                 });

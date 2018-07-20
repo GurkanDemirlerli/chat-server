@@ -7,6 +7,7 @@ import {
 } from '../../models';
 import { ErrorHandler } from '../../errors/ErrorHandler';
 import 'reflect-metadata';
+import { onlineUsers } from '../../socket/online-users';
 
 
 @injectable()
@@ -62,5 +63,11 @@ export class UsersController {
                 'error': error
             });
         });
+    }
+
+    test(req, res, next) {
+        return res.json({
+            onlineUsers
+        })
     }
 }

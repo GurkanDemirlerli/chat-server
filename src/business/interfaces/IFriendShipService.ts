@@ -17,5 +17,6 @@ export interface IFriendShipService {
     cancelFriendshipRequest(friendshipRequestId: string, cancellerId: string): Promise<IFriendshipRequestViewModel>;
     removeFriendship(friendshipId: string, userId: string): Promise<string>;
     listFriends(userId: string): Promise<IFriendViewModel[]>;
-    findMyFriend(myId:string, friendId:string): Promise<IFriendViewModel>;
+    getFriendIds(userId: string): Promise<string[]>;
+    findMyFriend(myId: string, friendId: string): Promise<IFriendViewModel>;
 }

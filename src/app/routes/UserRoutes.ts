@@ -17,5 +17,7 @@ export class UserRoutes {
         app.route(root + '/deleteNotificationId')
             .post((req, res, next) => usersController.deleteNotificationId(req, res, next));
 
+        app.route(root + '/test')
+            .get((req, res, next) => usersController.test(req, res, next));
     }
 }

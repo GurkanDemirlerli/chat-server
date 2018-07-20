@@ -21,7 +21,7 @@ import { SocketHandler } from './socket/socket-handler';
 let app: express.Application = express();
 let server: httpServer = createServer(app);
 //ASAGIDAKI SATIR CIRCULAR DEPENDENCY OLUSTURUYOR .......DIKKAT........
-export let io: socketIoServer = socketIo(server, { 'pingInterval': 2000, 'pingTimeout': 5000 });
+export let io: socketIoServer = socketIo(server/*, { 'pingInterval': 2000, 'pingTimeout': 5000 }*/);
 
 
 

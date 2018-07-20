@@ -121,26 +121,6 @@ export class UserService implements IUserService {
         });
     }
 
-    // searchUsers(username: string, limit: number, skip: number, myId: string): Promise<IUserSearchResultModel[]> {
-    //     return new Promise<IUserSearchResultModel[]>((resolve, reject) => {
-    //         let users: IUserSearchResultModel[] = [];
-    //         this._userRepository.searchUsers(username, limit, skip).then((res) => {
-    //             for (let i = 0; i < res.length; i++) {
-    //                 let user: IUserSearchResultModel = <IUserSearchResultModel>new Object();
-    //                 user._id = res[i]._id;
-    //                 user.username = res[i].username;
-    //                 user.firstname = res[i].firstname;
-    //                 user.lastname = res[i].lastname;
-    //                 user.email = res[i].email;
-    //                 if (user._id.toString() !== myId) {
-    //                     user.isSelf = true;
-    //                 }
-    //                 return this._friendShipRepository.arkadaslikKontrol(myId, res[i]._id);
-    //             }
-    //         })
-    //     });
-    // }
-
     //Duzenlenecek
     searchUsers(username: string, limit: number, skip: number, myId: string): Promise<IUserSearchResultModel[]> {
         return new Promise<IUserSearchResultModel[]>((resolve, reject) => {

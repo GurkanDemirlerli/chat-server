@@ -145,9 +145,6 @@ export interface ISignupResult {
     createdAt: string;
 }
 
-export interface IUserSearchResult {
-
-}
 
 export class OnlineUser {
     _id: string;

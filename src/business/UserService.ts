@@ -121,23 +121,42 @@ export class UserService implements IUserService {
         });
     }
 
-    searchUsers(name, limit, skip, myId): Promise<IUserSearchResultModel[]> {
+    // searchUsers(username: string, limit: number, skip: number, myId: string): Promise<IUserSearchResultModel[]> {
+    //     return new Promise<IUserSearchResultModel[]>((resolve, reject) => {
+    //         let users: IUserSearchResultModel[] = [];
+    //         this._userRepository.searchUsers(username, limit, skip).then((res) => {
+    //             for (let i = 0; i < res.length; i++) {
+    //                 let user: IUserSearchResultModel = <IUserSearchResultModel>new Object();
+    //                 user._id = res[i]._id;
+    //                 user.username = res[i].username;
+    //                 user.firstname = res[i].firstname;
+    //                 user.lastname = res[i].lastname;
+    //                 user.email = res[i].email;
+    //                 if (user._id.toString() !== myId) {
+    //                     user.isSelf = true;
+    //                 }
+    //                 return this._friendShipRepository.arkadaslikKontrol(myId, res[i]._id);
+    //             }
+    //         })
+    //     });
+    // }
+
+    //Duzenlenecek
+    searchUsers(username: string, limit: number, skip: number, myId: string): Promise<IUserSearchResultModel[]> {
         return new Promise<IUserSearchResultModel[]>((resolve, reject) => {
             let users: IUserSearchResultModel[] = [];
-            this._userRepository.searchUsers(name, limit, skip).then(async (res) => {
-                if (res) {
+            this._userRepository.searchUsers(username, limit, skip).then(async (res) => {
+                if (res.length > 0) {
                     await res.forEach(async (userRes, index) => {
                         let user: IUserSearchResultModel = <IUserSearchResultModel>new Object();
                         user._id = userRes._id;
                         user.username = userRes.username;
                         user.firstname = userRes.firstname;
                         user.lastname = userRes.lastname;
-                        user.email = userRes.email;
                         if (user._id.toString() != myId) {
                             await this._friendShipRepository.arkadaslikKontrol(myId, userRes._id).then((arkadaslarMı) => {
                                 if (arkadaslarMı) {
                                     user.isFriend = true;
-                                    //arkadas iseler isfriend true olacak.
                                 } else {
                                     user.isFriend = false;
                                 }
@@ -173,16 +192,14 @@ export class UserService implements IUserService {
                             user.isSendedRequestWaiting = false;
                             user.isFriend = false;
                         }
-                        console.log('UP', user);
                         users.push(user);
                         if (users.length === res.length) {
-                            console.log('DOWN', users);
                             resolve(users);
                         }
                     });
 
                 } else {
-                    reject('Error : sonuc bulunamadi.');
+                    resolve([]);
                 }
             }).catch((error) => {
                 reject(error);

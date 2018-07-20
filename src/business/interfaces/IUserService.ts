@@ -13,7 +13,7 @@ export interface IUserService {
     changeNotificationId(userId, notifyId): Promise<any>;
     deleteNotificationId(userId): Promise<any>;
     listMyFriends(myId: string): Promise<any[]>;
-    searchUsers(name, limit, skip, myId): Promise<IUserSearchResultModel[]>
+    searchUsers(username: string, limit: number, skip: number, myId: string): Promise<IUserSearchResultModel[]>;
     getMyProfileCard(myId: string): Promise<IProfileCard>;
     controlUniquenessForEmail(email: string): Promise<boolean>;
     test(userId: string): Promise<any[]>;

@@ -3,7 +3,6 @@ export interface IUserSearchResultModel {
     username?: String;
     firstname?: String;
     lastname?: String;
-    email?: String;
     isFriend?: Boolean;
     isSendedRequestWaiting?: Boolean;
     sendedRequestWaiting?: String;

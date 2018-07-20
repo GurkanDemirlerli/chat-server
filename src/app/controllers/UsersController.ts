@@ -3,7 +3,7 @@ import { IUserService, IMessageService, AuthenticationService } from '../../busi
 import { injectable, inject } from 'inversify';
 import { IOCTYPES } from '../../ioc/ioc-types.enum';
 import {
-    IUserSearchResult
+    IUserSearchResultModel
 } from '../../models';
 import { ErrorHandler } from '../../errors/ErrorHandler';
 import 'reflect-metadata';
@@ -14,8 +14,7 @@ import { onlineUsers } from '../../socket/online-users';
 export class UsersController {
 
     constructor(
-        @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService,
-        @inject(IOCTYPES.MESSAGE_SERVICE) private _messageService: IMessageService
+        @inject(IOCTYPES.USER_SERVICE) private _userService: IUserService
     ) { }
 
     searchUsersByUsername(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -24,8 +23,9 @@ export class UsersController {
             const limit = req.query.limit;
             const skip = req.query.skip;
             //TO DO model yap validation yap
-            return this._userService.searchUsers(username, limit, skip, decodedToken._id);
-        }).then((data: IUserSearchResult[]) => {
+            return this._userService.searchUsers(username, parseInt(limit), parseInt(skip), decodedToken._id);
+        }).then((data: IUserSearchResultModel[]) => {
+            console.log(data);
             return res.status(200).json({
                 'success': true,
                 'data': data

@@ -42,14 +42,13 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
         return p;
     }
     //TO DO : INDEXLEME YAPARAK ARAT
-    searchUsers(name, limit, skip): Promise<IUser[]> {
+    searchUsers(username: string, limit: number, skip: number): Promise<IUser[]> {
         let p = new Promise<IUser[]>((resolve, reject) => {
             UserSchema
-                .find({ 'name': new RegExp(name, 'i') })
-                .select('_id name email')
+                .find({ username: new RegExp(username, 'i') })
+                .select('_id username firstname lastname about')
                 .limit(limit)
                 .skip(skip)
-                // .select('_id name email about')
                 .exec((err, res) => {
                     if (err) {
                         reject(err);
